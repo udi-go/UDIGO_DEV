@@ -1,9 +1,10 @@
-package com.ssac.place
+package com.ssac.place.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +12,10 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.gms.location.LocationServices
+import com.ssac.place.KakaoApis
+import com.ssac.place.KakaoSearchResponse
+import com.ssac.place.R
 import com.ssac.place.models.KakaoDocument
-import net.daum.android.map.MapViewEventListener
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -20,13 +23,17 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.POIItemEventListener {
+class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, MapView.POIItemEventListener {
+    private val result: String by lazy { intent.getStringExtra("result") as String }
+
     private val mapViewContainer: ViewGroup by lazy { findViewById(R.id.mapView) }
     private val infoLayout: ConstraintLayout by lazy { findViewById(R.id.infoLayout) }
     private val nameTextView: TextView by lazy { findViewById(R.id.nameTextView) }
     private val addressTextView: TextView by lazy { findViewById(R.id.addressTextView) }
 
     private var mapView: MapView? = null
+    private var lastCenterPoint: MapPoint? = null
+    private var lastZoomLevel: Int = 3
 
     private var documentList: List<KakaoDocument> = listOf()
     private var selectedDocument: KakaoDocument? = null
@@ -34,21 +41,15 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_result)
-
     }
 
     override fun onResume() {
         super.onResume()
 
         mapView = MapView(this).apply {
-            mapViewEventListener = this@SearchResultActivity
+            setMapViewEventListener(this@SearchResultActivity)
             setPOIItemEventListener(this@SearchResultActivity)
             mapViewContainer.addView(this)
-        }
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            moveToCurrentLocation()
-        } else {
-            requestPermission()
         }
     }
 
@@ -73,9 +74,9 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
         }
     }
 
-    override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
-        p1?.let { item ->
-            val document = documentList[item.tag]
+    override fun onPOIItemSelected(mapView: MapView?, item: MapPOIItem?) {
+        item?.let { it ->
+            val document = documentList[it.tag]
             selectedDocument = document
             infoLayout.visibility = View.VISIBLE
             nameTextView.text = document.place_name
@@ -87,7 +88,48 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
         return
     }
 
-    override fun onLoadMapView() {
+    override fun onMapViewInitialized(mapView: MapView?) {
+        if (lastCenterPoint==null) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                moveToCurrentLocation()
+            } else {
+                requestPermission()
+            }
+        } else {
+            mapView?.setMapCenterPoint(lastCenterPoint, false)
+            resetDocumentList(documentList)
+        }
+    }
+
+    override fun onMapViewCenterPointMoved(mapView: MapView?, mapPoint: MapPoint?) {
+        lastCenterPoint = mapPoint
+    }
+
+    override fun onMapViewZoomLevelChanged(mapView: MapView?, zoomLevel: Int) {
+        lastZoomLevel = zoomLevel
+    }
+
+    override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
+        return
+    }
+
+    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
+        return
+    }
+
+    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
+        return
+    }
+
+    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+        return
+    }
+
+    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
+        return
+    }
+
+    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
         return
     }
 
@@ -105,7 +147,6 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
 
     @SuppressLint("MissingPermission")
     private fun moveToCurrentLocation() {
-        mapView?.setZoomLevel(3, false)
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location==null) {
@@ -119,11 +160,14 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
     }
 
     private fun moveToMapCenterPoint(latitude: Double = 37.51778532586552, longitude: Double = 126.8864141623943) {
-        mapView?.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(latitude, longitude), false)
+        val point = MapPoint.mapPointWithGeoCoord(latitude, longitude)
+        lastCenterPoint = point
+        mapView?.setMapCenterPointAndZoomLevel(point, lastZoomLevel, false)
     }
 
     private fun searchWithKakao(latitude: Double = 37.51778532586552, longitude: Double = 126.8864141623943) {
-        KakaoApis.getInstance().search("공원", longitude.toString(), latitude.toString()).enqueue(object : Callback<KakaoSearchResponse> {
+        KakaoApis.getInstance()
+            .search(result, longitude.toString(), latitude.toString()).enqueue(object : Callback<KakaoSearchResponse> {
             override fun onResponse(
                 call: Call<KakaoSearchResponse>,
                 response: Response<KakaoSearchResponse>
@@ -147,8 +191,9 @@ class SearchResultActivity : AppCompatActivity(), MapViewEventListener, MapView.
     private fun resetDocumentList(list: List<KakaoDocument>) {
         documentList = list
         val poiItemList = mutableListOf<MapPOIItem>()
-        for ((i, document) in documentList.iterator().withIndex())
+        for ((i, document) in documentList.iterator().withIndex()) {
             poiItemList.add(document.toPOIItem(i))
+        }
         mapView?.addPOIItems(poiItemList.toTypedArray())
     }
 

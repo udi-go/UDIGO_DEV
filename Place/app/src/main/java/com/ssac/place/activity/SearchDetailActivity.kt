@@ -1,7 +1,6 @@
-package com.ssac.place
+package com.ssac.place.activity
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -11,10 +10,13 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.kakao.sdk.auth.UriUtility
+import com.ssac.place.R
+import com.ssac.place.TravelApis
+import com.ssac.place.TravelSearchResponse
 import com.ssac.place.extensions.isInstalled
 import com.ssac.place.models.KakaoDocument
 import com.ssac.place.models.TravelRecommend
+import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import retrofit2.Call
 import retrofit2.Callback
@@ -25,6 +27,7 @@ class SearchDetailActivity : AppCompatActivity() {
     private val mapViewContainer: ViewGroup by lazy { findViewById(R.id.mapView) }
     private val titleTextView: TextView by lazy { findViewById(R.id.titleTextView) }
     private val addressTextView: TextView by lazy { findViewById(R.id.addressTextView) }
+    private val typeRecyclerView: RecyclerView by lazy { findViewById(R.id.typeRecyclerView) }
     private val recyclerView: RecyclerView by lazy { findViewById(R.id.recyclerView) }
 
     private var mapView: MapView? = null
@@ -44,6 +47,7 @@ class SearchDetailActivity : AppCompatActivity() {
         mapView = MapView(this).apply {
             mapViewContainer.addView(this)
             addPOIItem(document.toPOIItem(0))
+            setMapCenterPoint(MapPoint.mapPointWithGeoCoord(document.y.toDouble(), document.x.toDouble()), false)
         }
     }
 
@@ -59,7 +63,8 @@ class SearchDetailActivity : AppCompatActivity() {
     }
 
     private fun searchWithTravel() {
-        TravelApis.getInstance().search(document.x.toDouble(), document.y.toDouble()).enqueue(object : Callback<TravelSearchResponse> {
+        TravelApis.getInstance()
+            .search(document.x.toDouble(), document.y.toDouble()).enqueue(object : Callback<TravelSearchResponse> {
             override fun onResponse(
                 call: Call<TravelSearchResponse>,
                 response: Response<TravelSearchResponse>
@@ -82,7 +87,19 @@ class SearchDetailActivity : AppCompatActivity() {
 
     private fun setRecommendList(list: List<TravelRecommend>) {
         recommendList = list
-        recyclerView.adapter = SearchDetailRecyclerAdapter(this, list) {
+
+        typeRecyclerView.adapter = RecommendTypeRecyclerAdapter(list) {
+            val type = it.tag as String
+            changeRecommendType(type)
+        }
+        recyclerView.adapter = RecommendRecyclerAdapter(this, list) {
+            moveToTravelDetail(it.tag as? String)
+        }
+    }
+
+    private fun changeRecommendType(type: String) {
+        val list = recommendList.filter { it.contentTypeId == type }.toList()
+        recyclerView.adapter = RecommendRecyclerAdapter(this, list) {
             moveToTravelDetail(it.tag as? String)
         }
     }
@@ -101,22 +118,13 @@ class SearchDetailActivity : AppCompatActivity() {
         }
     }
 
-    fun onTour(view: View) {
-        recyclerView.adapter = SearchDetailRecyclerAdapter(this, recommendList.filter { it.contentTypeId?.toInt() == 12 }.toList()) {
-            moveToTravelDetail(it.tag as? String)
-        }
-    }
-
-    fun onRestaurant(view: View) {
-        recyclerView.adapter = SearchDetailRecyclerAdapter(this, recommendList.filter { it.contentTypeId?.toInt() == 39 }.toList()) {
-            moveToTravelDetail(it.tag as? String)
-        }
-    }
-
     private fun moveToTravelDetail(contentId: String?) {
         contentId?.let {
+            val recommend = recommendList.first { it.contentid == contentId }
             val intent = Intent(this, TravelDetailActivity::class.java)
             intent.putExtra("contentId", it)
+            intent.putExtra("latitude", recommend.mapy)
+            intent.putExtra("longitude", recommend.mapx)
             startActivity(intent)
         }
     }

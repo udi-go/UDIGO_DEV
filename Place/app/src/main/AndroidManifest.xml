@@ -15,9 +15,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Place"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MyPageActivity"></activity>
-        <activity android:name=".LoginActivity" />
-        <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity">
+        <activity android:name=".activity.SplashActivity"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.MyPageActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -29,23 +42,18 @@
                     android:scheme="kakao4b5e6b1dbeb88b42d491d8a2ad61a44d" />
             </intent-filter>
         </activity>
-        <activity android:name=".TravelDetailActivity" />
-        <activity android:name=".SearchDetailActivity" />
-
-        <meta-data
-            android:name="com.kakao.sdk.AppKey"
-            android:value="4b5e6b1dbeb88b42d491d8a2ad61a44d" />
-
-        <activity android:name=".SearchResultActivity" />
         <activity
-            android:name=".MainActivity"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:name=".activity.TravelDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SearchDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SearchResultActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MainActivity"
+            android:screenOrientation="portrait"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -56,6 +64,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
         </provider>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="4b5e6b1dbeb88b42d491d8a2ad61a44d" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.ssac.place
+package com.ssac.place.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.kakao.sdk.user.UserApiClient
+import com.ssac.place.R
 
 class MyPageActivity : AppCompatActivity() {
     private val idTextView: TextView by lazy { findViewById(R.id.idTextView) }

@@ -6,7 +6,7 @@ import java.io.Serializable
 
 
 @Root(name = "item", strict = false)
-data class TravelDetail @JvmOverloads constructor(
+data class TravelDetail @JvmOverloads constructor (
 
     @field:Element(name = "contentid", required = false)
     @param:Element(name = "contentid", required = false)
@@ -40,6 +40,16 @@ data class TravelDetail @JvmOverloads constructor(
     @param:Element(name = "title", required = false)
     val title: String? = null,
 
+
+    @field:Element(name = "addr1", required = false)
+    @param:Element(name = "addr1", required = false)
+    val addr1: String? = null,
+
+
+    @field:Element(name = "addr2", required = false)
+    @param:Element(name = "addr2", required = false)
+    val addr2: String? = null,
+
     @field:Element(name = "homepage", required = false)
     @param:Element(name = "homepage", required = false)
     val homepage: String? = null,
@@ -48,4 +58,15 @@ data class TravelDetail @JvmOverloads constructor(
     @param:Element(name = "overview", required = false)
     val overview: String? = null,
 
-    ): Serializable
+): Serializable {
+    fun address(): String {
+        var result = ""
+        if (!addr1.isNullOrEmpty()) {
+            result += addr1
+        }
+        if (!addr2.isNullOrEmpty()) {
+            result += addr2
+        }
+        return result
+    }
+}
