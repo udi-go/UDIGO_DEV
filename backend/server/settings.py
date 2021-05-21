@@ -11,17 +11,19 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-from server import server_settings
+import server_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 각 media 파일에 대한 URL Prefix
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hkb360y#c$a*xrfmp84lg&_=k-_w$zrm)h!1k9kn)5(t+t+hlv'
 SECRET_KEY = server_settings.SECRET['secret']
 
 # SECURITY WARNING: don't run with debug turned on in production!
