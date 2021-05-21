@@ -1,0 +1,25 @@
+asgiref==3.3.4
+bcrypt==3.2.0
+brotlipy==0.7.0
+certifi==2020.12.5
+cffi @ file:///opt/concourse/worker/volumes/live/ca3c0fea-9d0f-4489-6889-89b42078ed37/volume/cffi_1613246931142/work
+chardet @ file:///opt/concourse/worker/volumes/live/9efbf151-b45b-463d-6340-a5c399bf00b7/volume/chardet_1607706825988/work
+cryptography @ file:///opt/concourse/worker/volumes/live/cdf8ff17-b0bf-4081-524c-b5a0afe929ba/volume/cryptography_1616769280208/work
+Django==3.2.3
+django-cors-headers==3.7.0
+idna @ file:///home/linux1/recipes/ci/idna_1610986105248/work
+mysqlclient==2.0.3
+numpy==1.20.3
+pandas==1.2.4
+Pillow==8.2.0
+pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
+PyJWT==1.7.1
+pyOpenSSL @ file:///tmp/build/80754af9/pyopenssl_1608057966937/work
+PySocks @ file:///opt/concourse/worker/volumes/live/ef943889-94fc-4539-798d-461c60b77804/volume/pysocks_1605305801690/work
+python-dateutil==2.8.1
+pytz==2021.1
+requests @ file:///tmp/build/80754af9/requests_1608241421344/work
+six==1.16.0
+sqlparse==0.4.1
+typing-extensions==3.10.0.0
+urllib3 @ file:///tmp/build/80754af9/urllib3_1615837158687/work

@@ -384,4 +384,5 @@ tags
 
 # End of https://www.toptal.com/developers/gitignore/api/django,pycharm,vim,python,macos
 
-server/server_settings.py
+backend/media/
+backend/server_settings.py
