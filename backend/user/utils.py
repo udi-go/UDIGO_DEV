@@ -1,5 +1,4 @@
 import jwt
-import json
 
 from .models import User
 from server.settings import SECRET_KEY
@@ -12,7 +11,7 @@ def login_decorator(func):
         try:
             auth_token = request.headers.get('Authorization')
             payload = jwt.decode(auth_token, SECRET_KEY, algorithm='HS256')
-            user = User.objects.get(id=payload["id"])
+            user = User.objects.get(id=payload["user_id"])
             request.user = user
             return func(self, request, *args, **kwargs)
         except User.DoesNotExist:
