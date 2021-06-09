@@ -10,7 +10,7 @@ data class TravelDetail @JvmOverloads constructor (
 
     @field:Element(name = "contentid", required = false)
     @param:Element(name = "contentid", required = false)
-    val contentid: String? = null,
+    val contentid: String,
 
     @field:Element(name = "contenttypeid", required = false)
     @param:Element(name = "contenttypeid", required = false)
@@ -38,13 +38,11 @@ data class TravelDetail @JvmOverloads constructor (
 
     @field:Element(name = "title", required = false)
     @param:Element(name = "title", required = false)
-    val title: String? = null,
-
+    val title: String,
 
     @field:Element(name = "addr1", required = false)
     @param:Element(name = "addr1", required = false)
     val addr1: String? = null,
-
 
     @field:Element(name = "addr2", required = false)
     @param:Element(name = "addr2", required = false)
@@ -58,7 +56,39 @@ data class TravelDetail @JvmOverloads constructor (
     @param:Element(name = "overview", required = false)
     val overview: String? = null,
 
-): Serializable {
+    @field:Element(name = "createdtime", required = false)
+    @param:Element(name = "createdtime", required = false)
+    val createdtime: String,
+
+    @field:Element(name = "modifiedtime", required = false)
+    @param:Element(name = "modifiedtime", required = false)
+    val modifiedtime: String,
+
+    @field:Element(name = "areacode", required = false)
+    @param:Element(name = "areacode", required = false)
+    val areacode: String? = null,
+
+    @field:Element(name = "sigungucode", required = false)
+    @param:Element(name = "sigungucode", required = false)
+    val sigungucode: String? = null,
+
+    @field:Element(name = "cat1", required = false)
+    @param:Element(name = "cat1", required = false)
+    val cat1: String? = null,
+
+    @field:Element(name = "cat2", required = false)
+    @param:Element(name = "cat2", required = false)
+    val cat2: String? = null,
+
+    @field:Element(name = "cat3", required = false)
+    @param:Element(name = "cat3", required = false)
+    val cat3: String? = null,
+
+    @field:Element(name = "zipcode", required = false)
+    @param:Element(name = "zipcode", required = false)
+    val zipcode: String? = null,
+
+    ): Serializable {
     fun address(): String {
         var result = ""
         if (!addr1.isNullOrEmpty()) {

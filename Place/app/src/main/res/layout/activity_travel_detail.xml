@@ -81,6 +81,7 @@
                 android:id="@+id/reviewTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="리뷰"
                 app:layout_constraintTop_toBottomOf="@+id/line1"
                 app:layout_constraintStart_toStartOf="parent"/>
 
@@ -89,6 +90,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="리뷰작성"
+                android:enabled="false"
+                android:onClick="onCreateReview"
                 app:layout_constraintTop_toBottomOf="@+id/line1"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -96,17 +99,37 @@
                 android:id="@+id/reviewRecyclerView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/createReviewButton" />
 
             <TextView
+                android:id="@+id/noReviewTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="160dp"
+                android:text="리뷰를 작성해주세요"
+                android:visibility="visible"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@+id/createReviewButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:constraint_referenced_ids="reviewRecyclerView,noReviewTextView"
+                app:barrierDirection="bottom"
+                app:barrierMargin="16dp"/>
+
+            <TextView
                 android:id="@+id/recommendationTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="가볼만한곳"
-                app:layout_constraintTop_toBottomOf="@id/reviewRecyclerView"
+                app:layout_constraintTop_toBottomOf="@id/barrier1"
                 app:layout_constraintStart_toStartOf="parent"/>
 
             <androidx.recyclerview.widget.RecyclerView

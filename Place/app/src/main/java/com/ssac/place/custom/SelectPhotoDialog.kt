@@ -7,7 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import com.ssac.place.R
 
 class SelectPhotoDialog(private val context: Context) {
-    private val builder: AlertDialog.Builder by lazy { AlertDialog.Builder(context).setView(view) }
+    private val builder: AlertDialog.Builder by lazy { AlertDialog.Builder(context, R.style.TransparentDialog).setView(view) }
     private val view: View by lazy { View.inflate(context, R.layout.alert_select_picture, null) }
     private val cameraButton: Button by lazy { view.findViewById(R.id.cameraButton) }
     private val albumButton: Button by lazy { view.findViewById(R.id.albumButton) }

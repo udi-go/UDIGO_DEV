@@ -15,7 +15,10 @@ import com.ssac.place.TravelApis
 import com.ssac.place.TravelSearchResponse
 import com.ssac.place.extensions.isInstalled
 import com.ssac.place.models.KakaoDocument
+import com.ssac.place.models.MyReview
 import com.ssac.place.models.TravelRecommend
+import com.ssac.place.networks.FetchReviewListResponse
+import com.ssac.place.networks.MyApis
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import retrofit2.Call
@@ -27,8 +30,10 @@ class SearchDetailActivity : AppCompatActivity() {
     private val mapViewContainer: ViewGroup by lazy { findViewById(R.id.mapView) }
     private val titleTextView: TextView by lazy { findViewById(R.id.titleTextView) }
     private val addressTextView: TextView by lazy { findViewById(R.id.addressTextView) }
+    private val reviewRecyclerView: RecyclerView by lazy { findViewById(R.id.reviewRecyclerView) }
+    private val noReviewTextView: TextView by lazy { findViewById(R.id.noReviewTextView) }
     private val typeRecyclerView: RecyclerView by lazy { findViewById(R.id.typeRecyclerView) }
-    private val recyclerView: RecyclerView by lazy { findViewById(R.id.recyclerView) }
+    private val recommendRecyclerView: RecyclerView by lazy { findViewById(R.id.recommendRecyclerView) }
 
     private var mapView: MapView? = null
 
@@ -38,6 +43,7 @@ class SearchDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_detail)
         searchWithTravel()
+        fetchReviewList()
 
         initDocument()
     }
@@ -60,6 +66,20 @@ class SearchDetailActivity : AppCompatActivity() {
     private fun initDocument() {
         titleTextView.text= document.place_name
         addressTextView.text = document.address()
+    }
+
+    private fun fetchReviewList() {
+        MyApis.getInstance().fetchReviewList(document.id.toInt(),"kakao").enqueue(object : Callback<FetchReviewListResponse> {
+            override fun onResponse(call: Call<FetchReviewListResponse>, response: Response<FetchReviewListResponse>) {
+                if (response.isSuccessful) {
+                    setReviewList(response.body()?.reviews)
+                }
+            }
+
+            override fun onFailure(call: Call<FetchReviewListResponse>, t: Throwable) {
+                Log.d("AAA", t.localizedMessage)
+            }
+        })
     }
 
     private fun searchWithTravel() {
@@ -85,6 +105,17 @@ class SearchDetailActivity : AppCompatActivity() {
         })
     }
 
+    private fun setReviewList(list: List<MyReview>?) {
+        if (list.isNullOrEmpty()) {
+            reviewRecyclerView.visibility = View.GONE
+            noReviewTextView.visibility = View.VISIBLE
+        } else {
+            reviewRecyclerView.visibility = View.VISIBLE
+            noReviewTextView.visibility = View.GONE
+            reviewRecyclerView.adapter = ReviewRecyclerAdapter(this, list, null)
+        }
+    }
+
     private fun setRecommendList(list: List<TravelRecommend>) {
         recommendList = list
 
@@ -92,14 +123,14 @@ class SearchDetailActivity : AppCompatActivity() {
             val type = it.tag as String
             changeRecommendType(type)
         }
-        recyclerView.adapter = RecommendRecyclerAdapter(this, list) {
+        recommendRecyclerView.adapter = RecommendRecyclerAdapter(this, list) {
             moveToTravelDetail(it.tag as? String)
         }
     }
 
     private fun changeRecommendType(type: String) {
         val list = recommendList.filter { it.contentTypeId == type }.toList()
-        recyclerView.adapter = RecommendRecyclerAdapter(this, list) {
+        recommendRecyclerView.adapter = RecommendRecyclerAdapter(this, list) {
             moveToTravelDetail(it.tag as? String)
         }
     }
@@ -127,5 +158,13 @@ class SearchDetailActivity : AppCompatActivity() {
             intent.putExtra("longitude", recommend.mapx)
             startActivity(intent)
         }
+    }
+
+    fun onCreateReview(view: View) {
+        val intent = Intent(this, CreateReviewActivity::class.java)
+        intent.putExtra("placeType", "kakao")
+        intent.putExtra("placeName", titleTextView.text.toString())
+        intent.putExtra("kakaoDocument", document)
+        startActivity(intent)
     }
 }

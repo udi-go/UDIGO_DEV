@@ -4,13 +4,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
 import com.ssac.place.KakaoApis
 import com.ssac.place.KakaoSearchResponse
@@ -27,9 +27,33 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
     private val result: String by lazy { intent.getStringExtra("result") as String }
 
     private val mapViewContainer: ViewGroup by lazy { findViewById(R.id.mapView) }
-    private val infoLayout: ConstraintLayout by lazy { findViewById(R.id.infoLayout) }
-    private val nameTextView: TextView by lazy { findViewById(R.id.nameTextView) }
-    private val addressTextView: TextView by lazy { findViewById(R.id.addressTextView) }
+    private val recyclerView: RecyclerView by lazy  {
+        findViewById<RecyclerView>(R.id.recommendRecyclerView).apply {
+            val helper = PagerSnapHelper()
+            helper.attachToRecyclerView(this)
+            addOnScrollListener(recyclerViewScrollListener)
+        }
+    }
+    private val recyclerViewScrollListener: RecyclerView.OnScrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+        }
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                val position = (recyclerView.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
+                documentList.getOrNull(position)?.let {
+                    moveToMapCenterPoint(it.y.toDouble(), it.x.toDouble(), true)
+                }
+                mapView?.poiItems?.forEach {
+                    if (it.tag == position) {
+                        mapView?.selectPOIItem(it, true)
+                    }
+                }
+            }
+        }
+    }
 
     private var mapView: MapView? = null
     private var lastCenterPoint: MapPoint? = null
@@ -76,11 +100,10 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
 
     override fun onPOIItemSelected(mapView: MapView?, item: MapPOIItem?) {
         item?.let { it ->
-            val document = documentList[it.tag]
+            val position = it.tag
+            val document = documentList[position]
             selectedDocument = document
-            infoLayout.visibility = View.VISIBLE
-            nameTextView.text = document.place_name
-            addressTextView.text = document.address()
+            recyclerView.scrollToPosition(position)
         }
     }
 
@@ -159,11 +182,12 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
         }
     }
 
-    private fun moveToMapCenterPoint(latitude: Double = 37.51778532586552, longitude: Double = 126.8864141623943) {
+    private fun moveToMapCenterPoint(latitude: Double = 37.51778532586552, longitude: Double = 126.8864141623943, animated: Boolean = false) {
         val point = MapPoint.mapPointWithGeoCoord(latitude, longitude)
         lastCenterPoint = point
-        mapView?.setMapCenterPointAndZoomLevel(point, lastZoomLevel, false)
+        mapView?.setMapCenterPointAndZoomLevel(point, lastZoomLevel, animated)
     }
+
 
     private fun searchWithKakao(latitude: Double = 37.51778532586552, longitude: Double = 126.8864141623943) {
         KakaoApis.getInstance()
@@ -189,12 +213,26 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
     }
 
     private fun resetDocumentList(list: List<KakaoDocument>) {
+        mapView?.removeAllPOIItems()
         documentList = list
         val poiItemList = mutableListOf<MapPOIItem>()
         for ((i, document) in documentList.iterator().withIndex()) {
             poiItemList.add(document.toPOIItem(i))
         }
         mapView?.addPOIItems(poiItemList.toTypedArray())
+        mapView?.poiItems?.firstOrNull()?.let {
+            mapView?.selectPOIItem(it, false)
+            moveToMapCenterPoint(it.mapPoint.mapPointGeoCoord.latitude, it.mapPoint.mapPointGeoCoord.longitude)
+        }
+        recyclerView.adapter = SearchResultRecyclerAdapter(this, documentList) {
+            val position = it.tag as Int
+            selectedDocument = documentList[position]
+            selectedDocument?.let {
+                val intent = Intent(this, SearchDetailActivity::class.java)
+                intent.putExtra("document", it)
+                startActivity(intent)
+            }
+        }
     }
 
     fun moveToDetail(view: View) {
