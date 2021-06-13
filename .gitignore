@@ -386,3 +386,4 @@ tags
 
 backend/media/
 backend/server_settings.py
+backend/place/model
