@@ -235,25 +235,56 @@ class PlaceLikeView(View):
                 return JsonResponse({'message': 'INVALID_PLACE_TYPE'}, status=400)
 
             if place_type == 'tour':
-                if not TourPlace.objects.filter(id=place_id).exists():
-                    return JsonResponse({'message': 'TOUR_PLACE_DOES_NOT_EXIST'}, status=400)
                 like = UserLikeTourPlace.objects.get(place=place_id, user=user)
-
             else:
-                if not KakaoPlace.objects.filter(id=place_id).exists():
-                    return JsonResponse({'message': 'KAKAO_PLACE_DOES_NOT_EXIST'}, status=400)
                 like = UserLikeKakaoPlace.objects.get(place=place_id, user=user)
 
             like.delete()
             result = False
 
         except UserLikeTourPlace.DoesNotExist:
+            if not TourPlace.objects.filter(id=place_id).exists():
+                TourPlace(
+                    id=place_id,
+                    address=f"{request.POST.get('addr1')} {request.POST.get('addr2')}",
+                    areacode=request.POST.get('areacode'),
+                    cat1=request.POST.get('cat1'),
+                    cat2=request.POST.get('cat2'),
+                    cat3=request.POST.get('cat3'),
+                    content_type_id=request.POST.get('content_type_id'),
+                    createdtime=request.POST.get('createdtime'),
+                    image1=request.POST.get('firstimage'),
+                    image2=request.POST.get('firstimage2'),
+                    mapx=request.POST.get('mapx'),
+                    mapy=request.POST.get('mapy'),
+                    modifiedtime=request.POST.get('modifiedtime'),
+                    sigungucode=request.POST.get('sigungucode'),
+                    tel=request.POST.get('tel'),
+                    title=request.POST.get('title'),
+                    overview=request.POST.get('overview'),
+                    zipcode=request.POST.get('zipcode'),
+                    homepage=request.POST.get('homepage')
+                ).save()
             UserLikeTourPlace(
                 place_id=place_id,
                 user=user
             ).save()
             result = True
         except UserLikeKakaoPlace.DoesNotExist:
+            if not KakaoPlace.objects.filter(id=place_id).exists():
+                KakaoPlace(
+                    id=place_id,
+                    title=request.POST.get('place_name'),
+                    place_url=request.POST.get('place_url'),
+                    category_name=request.POST.get('category_name'),
+                    category_group_code=request.POST.get('category_group_code'),
+                    category_group_name=request.POST.get('category_group_name'),
+                    tel=request.POST.get('phone'),
+                    address=request.POST.get('address_name'),
+                    road_address=request.POST.get('road_address_name'),
+                    mapx=request.POST.get('x'),
+                    mapy=request.POST.get('y')
+                ).save()
             UserLikeKakaoPlace(
                 place_id=place_id,
                 user=user
@@ -280,7 +311,7 @@ class UserLikeView(View):
         }
         for place in places:
             data = {
-                'place_id': place.id,
+                'place_id': place.place.id,
                 'type': 'tour',
                 'content_type_id': place.place.content_type_id,
                 'title': place.place.title,
