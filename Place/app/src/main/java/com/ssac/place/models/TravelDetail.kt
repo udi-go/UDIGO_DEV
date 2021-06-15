@@ -1,5 +1,7 @@
 package com.ssac.place.models
 
+import android.text.Spannable
+import androidx.core.text.HtmlCompat
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.Root
 import java.io.Serializable
@@ -98,5 +100,21 @@ data class TravelDetail @JvmOverloads constructor (
             result += addr2
         }
         return result
+    }
+
+    fun homepage(): String {
+        return if (homepage.isNullOrEmpty()) {
+            "-"
+        } else {
+            homepage
+        }
+    }
+
+    fun tel(): String {
+        return if (tel.isNullOrEmpty()) {
+            "-"
+        } else {
+            tel
+        }
     }
 }

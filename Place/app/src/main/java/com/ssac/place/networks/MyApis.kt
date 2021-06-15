@@ -1,7 +1,9 @@
 package com.ssac.place.networks
 
 import com.google.gson.GsonBuilder
+import com.ssac.place.models.MyLike
 import com.ssac.place.models.MyReview
+import com.ssac.place.models.PlaceReview
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -12,11 +14,11 @@ import retrofit2.http.*
 
 interface MyApis {
     @FormUrlEncoded
-    @POST("/user/kakao")
+    @POST("/user/login")
     fun loginWithKaKao(
-        @Field("token") token: String,
-        @Field("userId") userId: String,
-        @Field("type") type: String = "kakao"
+            @Header("Authorization") token: String,
+            @Field("userId") userId: String,
+            @Field("type") type: String = "kakao"
     ): Call<LoginResponse>
 
     @Multipart
@@ -75,10 +77,28 @@ interface MyApis {
     ): Call<Unit>
 
     @GET("/place/{placeId}/review")
-    fun fetchReviewList(
+    fun fetchPlaceReviewList(
             @Path("placeId") placeId: Int,
             @Query("type") type: String,
-    ): Call<FetchReviewListResponse>
+    ): Call<FetchPlaceReviewListResponse>
+
+    @GET("/place/review")
+    fun fetchMyReviewList(
+        @Header("Authorization") myToken: String
+    ): Call<FetchMyReviewListResponse>
+
+    @FormUrlEncoded
+    @POST("/place/like")
+    fun createTourLike(
+            @Header("Authorization") myToken: String,
+            @Field("place_id") placeId: Int,
+            @Field("type") type: String = "tour"
+    ): Call<Unit>
+
+    @GET("/place/user/like")
+    fun fetchMyLikeList(
+            @Header("Authorization") myToken: String
+    ): Call<FetchMyLikeListResponse>
 
     companion object {
         private var instance: MyApis? = null
@@ -113,7 +133,15 @@ data class MyClassifyResponse(
     val sentence: String
 )
 
-data class FetchReviewListResponse(
-    val reviews: List<MyReview>,
-    val grade: String
+data class FetchPlaceReviewListResponse(
+        val reviews: List<PlaceReview>,
+        val grade: String
+)
+
+data class FetchMyReviewListResponse(
+        val reviews: List<MyReview>
+)
+
+data class FetchMyLikeListResponse(
+        val likes: List<MyLike>
 )

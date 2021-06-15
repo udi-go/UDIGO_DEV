@@ -6,50 +6,132 @@
     android:layout_height="match_parent"
     tools:context=".activity.CreateReviewActivity">
 
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_back"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onBack"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/doneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="32dp"
+        android:src="@drawable/ic_finish"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onDone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <TextView
         android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="32dp"
         android:text="장소이름"
+        android:textStyle="bold"
+        android:fontFamily="@font/arita_buri_b"
+        android:textColor="@color/dark_text_22"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/backButton" />
 
-    <Button
-        android:id="@+id/doneButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="완료"
-        android:layout_marginEnd="16dp"
-        android:onClick="onDone"
-        app:layout_constraintBaseline_toBaselineOf="@+id/nameTextView"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <RatingBar
-        android:id="@+id/ratingBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:numStars="5"
-        android:rating="5"
-        android:stepSize="1"
+    <ImageButton
+        android:id="@+id/ratingButton1"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_star_on"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onRate"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/nameTextView"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ratingButton2"/>
+
+    <ImageButton
+        android:id="@+id/ratingButton2"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_star_on"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onRate"
+        app:layout_constraintStart_toEndOf="@+id/ratingButton1"
+        app:layout_constraintTop_toBottomOf="@+id/nameTextView"
+        app:layout_constraintEnd_toStartOf="@+id/ratingButton3"/>
+
+    <ImageButton
+        android:id="@+id/ratingButton3"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_star_on"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onRate"
+        app:layout_constraintStart_toEndOf="@+id/ratingButton2"
+        app:layout_constraintTop_toBottomOf="@+id/nameTextView"
+        app:layout_constraintEnd_toStartOf="@+id/ratingButton4"/>
+
+    <ImageButton
+        android:id="@+id/ratingButton4"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_star_on"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onRate"
+        app:layout_constraintStart_toEndOf="@+id/ratingButton3"
+        app:layout_constraintTop_toBottomOf="@+id/nameTextView"
+        app:layout_constraintEnd_toStartOf="@+id/ratingButton5"/>
+
+    <ImageButton
+        android:id="@+id/ratingButton5"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_star_on"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onRate"
+        app:layout_constraintStart_toEndOf="@+id/ratingButton4"
+        app:layout_constraintTop_toBottomOf="@+id/nameTextView"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <EditText
         android:id="@+id/reviewEditText"
         android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="64dp"
         android:gravity="start|top"
         android:inputType="textMultiLine"
+        android:padding="28dp"
+        android:hint="@string/create_review_edit_text_hint"
+        android:background="@drawable/drawable_gray_border_10_edittext_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
+        app:layout_constraintTop_toBottomOf="@+id/ratingButton1"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,16 +9,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.ssac.place.R
 import com.ssac.place.TravelApis
 import com.ssac.place.TravelSearchResponse
 import com.ssac.place.extensions.isInstalled
 import com.ssac.place.models.KakaoDocument
-import com.ssac.place.models.MyReview
+import com.ssac.place.models.PlaceReview
 import com.ssac.place.models.TravelRecommend
-import com.ssac.place.networks.FetchReviewListResponse
+import com.ssac.place.networks.FetchPlaceReviewListResponse
 import com.ssac.place.networks.MyApis
+import com.ssac.place.repository.LocalRepository
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import retrofit2.Call
@@ -30,6 +32,8 @@ class SearchDetailActivity : AppCompatActivity() {
     private val mapViewContainer: ViewGroup by lazy { findViewById(R.id.mapView) }
     private val titleTextView: TextView by lazy { findViewById(R.id.titleTextView) }
     private val addressTextView: TextView by lazy { findViewById(R.id.addressTextView) }
+    private val telTextView: TextView by lazy { findViewById(R.id.telTextView) }
+    private val homepageTextView: TextView by lazy { findViewById(R.id.homepageTextView) }
     private val reviewRecyclerView: RecyclerView by lazy { findViewById(R.id.reviewRecyclerView) }
     private val noReviewTextView: TextView by lazy { findViewById(R.id.noReviewTextView) }
     private val typeRecyclerView: RecyclerView by lazy { findViewById(R.id.typeRecyclerView) }
@@ -51,8 +55,11 @@ class SearchDetailActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mapView = MapView(this).apply {
+            mapViewContainer.clipToOutline = true
             mapViewContainer.addView(this)
-            addPOIItem(document.toPOIItem(0))
+            val item = document.toPOIItem(0)
+            addPOIItem(item)
+            selectPOIItem(item, false)
             setMapCenterPoint(MapPoint.mapPointWithGeoCoord(document.y.toDouble(), document.x.toDouble()), false)
         }
     }
@@ -66,18 +73,21 @@ class SearchDetailActivity : AppCompatActivity() {
     private fun initDocument() {
         titleTextView.text= document.place_name
         addressTextView.text = document.address()
+        telTextView.text = document.tel()
+        homepageTextView.text = document.homepage()
     }
 
     private fun fetchReviewList() {
-        MyApis.getInstance().fetchReviewList(document.id.toInt(),"kakao").enqueue(object : Callback<FetchReviewListResponse> {
-            override fun onResponse(call: Call<FetchReviewListResponse>, response: Response<FetchReviewListResponse>) {
+        MyApis.getInstance().fetchPlaceReviewList(document.id.toInt(),"kakao").enqueue(object : Callback<FetchPlaceReviewListResponse> {
+            override fun onResponse(call: Call<FetchPlaceReviewListResponse>, response: Response<FetchPlaceReviewListResponse>) {
                 if (response.isSuccessful) {
                     setReviewList(response.body()?.reviews)
                 }
             }
 
-            override fun onFailure(call: Call<FetchReviewListResponse>, t: Throwable) {
+            override fun onFailure(call: Call<FetchPlaceReviewListResponse>, t: Throwable) {
                 Log.d("AAA", t.localizedMessage)
+                setReviewList(null)
             }
         })
     }
@@ -105,7 +115,7 @@ class SearchDetailActivity : AppCompatActivity() {
         })
     }
 
-    private fun setReviewList(list: List<MyReview>?) {
+    private fun setReviewList(list: List<PlaceReview>?) {
         if (list.isNullOrEmpty()) {
             reviewRecyclerView.visibility = View.GONE
             noReviewTextView.visibility = View.VISIBLE
@@ -119,7 +129,7 @@ class SearchDetailActivity : AppCompatActivity() {
     private fun setRecommendList(list: List<TravelRecommend>) {
         recommendList = list
 
-        typeRecyclerView.adapter = RecommendTypeRecyclerAdapter(list) {
+        typeRecyclerView.adapter = RecommendTypeRecyclerAdapter(this, list) {
             val type = it.tag as String
             changeRecommendType(type)
         }
@@ -129,15 +139,27 @@ class SearchDetailActivity : AppCompatActivity() {
     }
 
     private fun changeRecommendType(type: String) {
-        val list = recommendList.filter { it.contentTypeId == type }.toList()
+        val list = if (type == RecommendTypeRecyclerAdapter.TYPE_ALL) {
+            recommendList
+        } else {
+            recommendList.filter { it.contentTypeId == type }.toList()
+        }
         recommendRecyclerView.adapter = RecommendRecyclerAdapter(this, list) {
             moveToTravelDetail(it.tag as? String)
         }
     }
 
-    fun onOpenPage(view: View) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(document.place_url))
-        startActivity(intent)
+    private fun showLoginAlert() {
+        AlertDialog.Builder(this, R.style.LoginAlertDialog)
+                .setTitle("로그인이 필요한 기능입니다.")
+                .setMessage("로그인하시겠습니까?")
+                .setPositiveButton("로그인") { dialog, i ->
+                    moveToLogin()
+                }
+                .setNegativeButton("취소") { dialog, i ->
+
+                }
+                .show()
     }
 
     fun routeTo(view: View) {
@@ -160,11 +182,28 @@ class SearchDetailActivity : AppCompatActivity() {
         }
     }
 
-    fun onCreateReview(view: View) {
+    private fun moveToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun moveToCreateReview() {
         val intent = Intent(this, CreateReviewActivity::class.java)
         intent.putExtra("placeType", "kakao")
         intent.putExtra("placeName", titleTextView.text.toString())
         intent.putExtra("kakaoDocument", document)
         startActivity(intent)
+    }
+
+    fun onBack(view: View) {
+        finish()
+    }
+
+    fun onCreateReview(view: View) {
+        if (LocalRepository.instance.getMyToken(this)!=null) {
+            moveToCreateReview()
+        } else {
+            showLoginAlert()
+        }
     }
 }

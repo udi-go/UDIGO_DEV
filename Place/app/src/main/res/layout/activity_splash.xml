@@ -4,26 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/drawable_splash_background"
     tools:context=".activity.start.SplashActivity">
 
-    <ImageView
-        android:id="@+id/logoImageView"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:src="@drawable/splash_180"
-        app:layout_constraintVertical_bias="0.4"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <ImageView
-        android:layout_width="180dp"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/orangelogo"
-        android:layout_marginTop="16dp"
+        android:textColor="@color/white"
+        android:text="어디GO"
+        android:textSize="48sp"
+        android:fontFamily="@font/arita_buri_l"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

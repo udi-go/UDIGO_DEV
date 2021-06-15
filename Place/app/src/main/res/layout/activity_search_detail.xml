@@ -5,37 +5,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.SearchDetailActivity">
-    <RelativeLayout
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_back"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:onClick="onBack"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="40dp"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@color/dark_text_14"
+        android:fontFamily="@font/arita_buri_b"
+        app:layout_constraintTop_toBottomOf="@+id/backButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
-    <Button
-        android:id="@+id/routeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="routeTo"
-        android:text="지도열기"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <Button
-        android:id="@+id/pageButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onOpenPage"
-        android:text="페이지"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/routeButton"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapView"
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -51,26 +55,101 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-                <TextView
-                    android:id="@+id/titleTextView"
+                <RelativeLayout
+                    android:id="@+id/mapView"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_height="224dp"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:background="@drawable/drawable_common_white_round_10_background"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/addressImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_place_marker"
+                    android:layout_marginTop="34dp"
+                    android:layout_marginStart="32dp"
+                    app:layout_constraintTop_toBottomOf="@+id/mapView"
+                    app:layout_constraintStart_toStartOf="parent"/>
+
                 <TextView
                     android:id="@+id/addressTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="16dp"
-                    app:layout_constraintTop_toBottomOf="@+id/titleTextView"
-                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:textColor="@color/dark_text_14"
+                    android:textSize="13sp"
+                    app:layout_constraintTop_toTopOf="@+id/addressImageView"
+                    app:layout_constraintBottom_toBottomOf="@+id/addressImageView"
+                    app:layout_constraintStart_toEndOf="@+id/addressImageView"
                     app:layout_constraintEnd_toEndOf="parent"/>
+
+                <Button
+                    android:id="@+id/addressButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:onClick="routeTo"
+                    android:background="@android:color/transparent"
+                    android:backgroundTint="@android:color/transparent"
+                    app:layout_constraintTop_toTopOf="@+id/addressTextView"
+                    app:layout_constraintBottom_toBottomOf="@+id/addressTextView"
+                    app:layout_constraintStart_toStartOf="@+id/addressTextView"
+                    app:layout_constraintEnd_toEndOf="@+id/addressTextView"/>
+
+                <ImageView
+                    android:id="@+id/telImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_place_tel"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="32dp"
+                    app:layout_constraintTop_toBottomOf="@+id/addressImageView"
+                    app:layout_constraintStart_toStartOf="parent"/>
+
+                <TextView
+                    android:id="@+id/telTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:textColor="@color/dark_text_14"
+                    android:textSize="13sp"
+                    app:layout_constraintTop_toTopOf="@+id/telImageView"
+                    app:layout_constraintBottom_toBottomOf="@+id/telImageView"
+                    app:layout_constraintStart_toEndOf="@+id/telImageView"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/homepageImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_place_homepage"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="32dp"
+                    app:layout_constraintTop_toBottomOf="@+id/telImageView"
+                    app:layout_constraintStart_toStartOf="parent"/>
+
+                <TextView
+                    android:id="@+id/homepageTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:textColor="@color/dark_text_14"
+                    android:textSize="13sp"
+                    android:autoLink="web"
+                    android:textColorLink="@color/dark_text_14"
+                    app:layout_constraintTop_toTopOf="@+id/homepageImageView"
+                    app:layout_constraintBottom_toBottomOf="@+id/homepageImageView"
+                    app:layout_constraintStart_toEndOf="@+id/homepageImageView"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -86,17 +165,28 @@
                     android:id="@+id/reviewTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="80dp"
+                    android:layout_marginStart="32dp"
                     android:text="리뷰"
-                    android:layout_margin="16dp"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="@color/dark_text_22"
+                    android:fontFamily="@font/arita_buri_b"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
-                <Button
+
+                <ImageButton
                     android:id="@+id/createReviewButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="리뷰작성"
+                    android:enabled="false"
                     android:onClick="onCreateReview"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:src="@drawable/ic_place_review"
+                    android:layout_marginEnd="32dp"
+                    android:background="@android:color/transparent"
+                    android:backgroundTint="@android:color/transparent"
+                    app:layout_constraintTop_toTopOf="@+id/reviewTextView"
+                    app:layout_constraintBottom_toBottomOf="@+id/reviewTextView"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -113,35 +203,67 @@
                 <TextView
                     android:id="@+id/noReviewTextView"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="80dp"
-                    android:text="리뷰를 남겨주세요"
+                    android:layout_height="160dp"
+                    android:text="리뷰를 작성해주세요"
                     android:visibility="gone"
+                    android:gravity="center"
                     app:layout_constraintTop_toBottomOf="@+id/reviewTextView"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/typeRecyclerView"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/recommendLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintTop_toBottomOf="@+id/reviewLayout"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recommendRecyclerView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeRecyclerView" />
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/recommendTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="근처 가볼만한 곳"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/dark_text_22"
+                    android:fontFamily="@font/arita_buri_b"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/typeRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="15dp"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    android:clipToPadding="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintTop_toBottomOf="@+id/recommendTextView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recommendRecyclerView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/typeRecyclerView" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -10,8 +10,10 @@
         <item name="colorSecondaryVariant">@color/green_light</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
         <!-- Customize your theme here. -->
+        <item name="buttonStyle">@android:style/Widget.Button</item>
         <item name="android:fontFamily">@font/app_default</item>
     </style>
 
@@ -22,8 +24,28 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <style name="SelectAlert">
-        <item name="android:background">@drawable/drawable_select_alert_background</item>
+    <style name="SelectAlertDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@drawable/drawable_select_alert_background</item>
+        <item name="android:windowTitleStyle">@style/SelectAlertDialogTitle</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="SelectAlertDialogTitle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="LoginAlertDialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="buttonBarPositiveButtonStyle">@style/LoginAlertDialogPositiveButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/LoginAlertDialogNegativeButton</item>
+    </style>
+
+    <style name="LoginAlertDialogPositiveButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+
+    <style name="LoginAlertDialogNegativeButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/black</item>
     </style>
 
 </resources>

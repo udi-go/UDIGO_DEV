@@ -10,6 +10,7 @@ import com.kakao.sdk.user.UserApiClient
 import com.ssac.place.R
 import com.ssac.place.networks.LoginResponse
 import com.ssac.place.networks.MyApis
+import com.ssac.place.repository.LocalRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -37,6 +38,7 @@ class LoginActivity : AppCompatActivity() {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let {
+                        LocalRepository.instance.setMyToken(this@LoginActivity, it.access_token)
                         Log.d("AAA", it.access_token)
                         setResult(RESULT_OK)
                         finish()

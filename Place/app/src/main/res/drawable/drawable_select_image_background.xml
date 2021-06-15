@@ -2,8 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <stroke
         android:width="2dp"
-        android:color="@color/green_light"
-        android:dashWidth="10dp"
+        android:color="@color/black"
+        android:dashWidth="6dp"
         android:dashGap="6dp"/>
-    <corners android:radius="16dp" />
+    <corners android:radius="10dp" />
 </shape>

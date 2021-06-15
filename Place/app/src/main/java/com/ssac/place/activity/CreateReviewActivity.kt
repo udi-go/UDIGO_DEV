@@ -2,24 +2,24 @@ package com.ssac.place.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
-import com.kakao.sdk.auth.AuthApiClient
-import com.kakao.sdk.common.KakaoSdk
 import com.ssac.place.R
 import com.ssac.place.models.KakaoDocument
 import com.ssac.place.models.TravelDetail
 import com.ssac.place.networks.MyApis
+import com.ssac.place.repository.LocalRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.http.Field
 
 class CreateReviewActivity : AppCompatActivity() {
     private val nameTextView: TextView by lazy { findViewById(R.id.nameTextView) }
-    private val doneButton: Button by lazy { findViewById(R.id.doneButton) }
-    private val ratingBar: RatingBar by lazy { findViewById(R.id.ratingBar) }
+    private val ratingButton1: ImageButton by lazy { findViewById(R.id.ratingButton1) }
+    private val ratingButton2: ImageButton by lazy { findViewById(R.id.ratingButton2) }
+    private val ratingButton3: ImageButton by lazy { findViewById(R.id.ratingButton3) }
+    private val ratingButton4: ImageButton by lazy { findViewById(R.id.ratingButton4) }
+    private val ratingButton5: ImageButton by lazy { findViewById(R.id.ratingButton5) }
     private val reviewEditText: EditText by lazy { findViewById(R.id.reviewEditText) }
 
     private val placeType: String by lazy { intent.getStringExtra("placeType") as String }
@@ -27,17 +27,41 @@ class CreateReviewActivity : AppCompatActivity() {
     private val kakaoDocument: KakaoDocument? by lazy { intent.getSerializableExtra("kakaoDocument") as? KakaoDocument }
     private val travelDetail: TravelDetail? by lazy { intent.getSerializableExtra("travelDetail") as? TravelDetail }
 
+    private var rate: Int = 5
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_review)
 
-        KakaoSdk.init(this, "4b5e6b1dbeb88b42d491d8a2ad61a44d")
         initLayout()
     }
 
     private fun initLayout() {
         nameTextView.text = placeName
-        ratingBar.rating = 5f
+    }
+
+    private fun setRating(rating: Int) {
+        rate = rating
+        if (rate > 1) {
+            ratingButton2.setImageResource(R.drawable.ic_star_on)
+        } else {
+            ratingButton2.setImageResource(R.drawable.ic_star_off)
+        }
+        if (rate > 2) {
+            ratingButton3.setImageResource(R.drawable.ic_star_on)
+        } else {
+            ratingButton3.setImageResource(R.drawable.ic_star_off)
+        }
+        if (rate > 3) {
+            ratingButton4.setImageResource(R.drawable.ic_star_on)
+        } else {
+            ratingButton4.setImageResource(R.drawable.ic_star_off)
+        }
+        if (rate > 4) {
+            ratingButton5.setImageResource(R.drawable.ic_star_on)
+        } else {
+            ratingButton5.setImageResource(R.drawable.ic_star_off)
+        }
     }
 
     private fun createReview(token: String, rating: Int, contents: String) {
@@ -45,7 +69,7 @@ class CreateReviewActivity : AppCompatActivity() {
         val travelDetail = travelDetail
         if (placeType=="kakao" && document!=null) {
             MyApis.getInstance().createKakaoReview(
-                    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyfQ.NiBmZlBggpMOfgR5JTvl6no_T5ttjXZz_oeXcziFDDA",
+                    token,
                     placeType,
                     document.id.toInt(),
                     document.place_name,
@@ -72,7 +96,8 @@ class CreateReviewActivity : AppCompatActivity() {
                         }
                     })
         } else if (placeType=="tour" && travelDetail!=null){
-            MyApis.getInstance().createTourReview("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyfQ.NiBmZlBggpMOfgR5JTvl6no_T5ttjXZz_oeXcziFDDA",
+            MyApis.getInstance().createTourReview(
+                    token,
                     placeType,
                     travelDetail.contentid.toInt(),
                     travelDetail.addr1 ?: "",
@@ -109,17 +134,30 @@ class CreateReviewActivity : AppCompatActivity() {
         }
     }
 
+    fun onBack(view: View) {
+        finish()
+    }
+
+    fun onRate(view: View) {
+        when(view.id) {
+            R.id.ratingButton1 -> setRating(1)
+            R.id.ratingButton2 -> setRating(2)
+            R.id.ratingButton3 -> setRating(3)
+            R.id.ratingButton4 -> setRating(4)
+            R.id.ratingButton5 -> setRating(5)
+        }
+    }
+
     fun onDone(view: View) {
-        val rate = ratingBar.rating.toInt()
         val review = reviewEditText.text.toString().trim()
         if (review.isEmpty()) {
             Toast.makeText(this, "내용을 입력하세요", Toast.LENGTH_SHORT).show()
         } else {
-            val token = AuthApiClient.instance.tokenManagerProvider.manager.getToken()
+            val token = LocalRepository.instance.getMyToken(this)
             if (token == null) {
                 Toast.makeText(this, "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
             } else {
-                createReview(token.accessToken, rate, review)
+                createReview(token, rate, review)
             }
         }
     }

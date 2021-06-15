@@ -235,6 +235,10 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
         }
     }
 
+    fun onBack(view: View) {
+        finish()
+    }
+
     fun moveToDetail(view: View) {
         selectedDocument?.let {
             val intent = Intent(this, SearchDetailActivity::class.java)

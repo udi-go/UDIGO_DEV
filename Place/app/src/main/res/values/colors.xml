@@ -13,4 +13,12 @@
 
     <color name="divider">#20000000</color>
     <color name="dialog_background">#30000000</color>
+
+    <color name="dark_text_26">#262626</color>
+    <color name="dark_text_22">#DE222222</color>
+    <color name="dark_text_14">#DE141414</color>
+    <color name="dark_button_text">#1B2C33</color>
+    <color name="gray_border_e5">#E5E5E5</color>
+    <color name="gray_border_70">#707070</color>
+    <color name="gray_button_e0">#E0E0E0</color>
 </resources>

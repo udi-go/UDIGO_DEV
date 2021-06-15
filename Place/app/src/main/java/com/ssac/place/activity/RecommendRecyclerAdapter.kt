@@ -1,12 +1,15 @@
 package com.ssac.place.activity
 
 import android.content.Context
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.ssac.place.R
@@ -33,22 +36,24 @@ class RecommendRecyclerAdapter(
 
 class RecommendRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
     private val imageView: ImageView = view.findViewById(R.id.imageView)
-    private val titleTextView: TextView = view.findViewById(R.id.titleTextView)
+    private val nameTextView: TextView = view.findViewById(R.id.nameTextView)
     private val addressTextView: TextView = view.findViewById(R.id.addressTextView)
 
     fun setRecommend(context: Context, recommend: TravelRecommend) {
-        Glide.with(context).load(recommend.firstimage2).into(imageView)
-        titleTextView.text = recommend.title
+        Glide.with(context).load(recommend.firstimage2).circleCrop().placeholder(R.drawable.drawable_round_image_place_holder).into(imageView)
+        nameTextView.text = recommend.title
         addressTextView.text = recommend.addr1
         itemView.tag = recommend.contentid
     }
 }
 
 class RecommendTypeRecyclerAdapter(
+        private val context: Context,
         private val recommendList: List<TravelRecommend>,
-        private val onClickListener: View.OnClickListener
+        private val onClickListener: (View)->Unit
 ): RecyclerView.Adapter<RecommendTypeRecyclerViewHolder>() {
-    private val typeList: List<String> = recommendList.mapNotNull { it.contentTypeId }.toSet().toList()
+    private val typeList: List<String> = recommendList.mapNotNull { it.contentTypeId }.toSet().toMutableList().apply { add(0, TYPE_ALL) }
+    private var selectedPosition: Int = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecommendTypeRecyclerViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_recommend_type_recycler_view_holder, parent, false)
@@ -56,15 +61,33 @@ class RecommendTypeRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: RecommendTypeRecyclerViewHolder, position: Int) {
-        holder.setName(typeNameMap[typeList[position]])
+        holder.setType(typeNameMap[typeList[position]])
+        holder.setSelected(context, position == selectedPosition)
         holder.itemView.tag = typeList[position]
-        holder.itemView.setOnClickListener(onClickListener)
+        holder.itemView.setOnClickListener{
+            val typeId = it.tag as String
+            selectType(typeId)
+            onClickListener(it)
+        }
     }
 
     override fun getItemCount(): Int = typeList.count()
 
+    private fun selectType(typeId: String) {
+        val oldPosition = selectedPosition
+        typeList.indexOfFirst { it == typeId }.let { newPosition ->
+            if (oldPosition != newPosition) {
+                selectedPosition = newPosition
+                notifyItemChanged(oldPosition)
+                notifyItemChanged(newPosition)
+            }
+        }
+    }
+
     companion object {
+        const val TYPE_ALL = "all"
         private val typeNameMap = mapOf(
+                TYPE_ALL to "전체",
                 "12" to "관광지",
                 "14" to "문화시설",
                 "15" to "축제/공연/행사",
@@ -78,9 +101,22 @@ class RecommendTypeRecyclerAdapter(
 }
 
 class RecommendTypeRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    private val backgroundLayout: ConstraintLayout = view.findViewById(R.id.backgroundLayout)
     private val nameTextView: TextView = view.findViewById(R.id.nameTextView)
 
-    fun setName(name: String?) {
-        nameTextView.text = name
+    fun setType(type: String?) {
+        nameTextView.text = type
+    }
+
+    fun setSelected(context: Context, selected: Boolean) {
+        if (selected) {
+            nameTextView.setTextColor(context.getColor(R.color.white))
+            nameTextView.setTypeface(nameTextView.typeface, Typeface.BOLD)
+            backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gradation_40_button_background)
+        } else {
+            nameTextView.setTextColor(context.getColor(R.color.black))
+            nameTextView.setTypeface(nameTextView.typeface, Typeface.NORMAL)
+            backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gray_border_40_button_background)
+        }
     }
 }
