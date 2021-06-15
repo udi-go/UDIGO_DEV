@@ -8,9 +8,7 @@ class User(models.Model):
         (2, 'google')
     )
     social_type = models.IntegerField(choices=SOCIALCHOICE, default=0)
-    kakao_id = models.IntegerField(null=True)
-    naver_id = models.IntegerField(null=True)
-    google_id = models.IntegerField(null=True)
+    social_id = models.IntegerField()
     nickname = models.CharField(max_length=25)
     created_at = models.DateTimeField(auto_now_add=True)
 

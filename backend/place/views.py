@@ -1,58 +1,81 @@
+# -*- coding: utf-8 -*-
+import os
+import cv2
+import csv
 import json
+import numpy as np
 from PIL import Image
+from pathlib import Path
+from datetime import datetime
 from django.views import View
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.core.files.storage import FileSystemStorage
+from tensorflow.keras.models import load_model
 
 from server import settings
-from .models import KakaoPlace, TourPlace, Review
+from .models import KakaoPlace, TourPlace, Review, UserLikeTourPlace, UserLikeKakaoPlace
 from user.utils import login_decorator
+from tensorflow.keras.models import load_model
 
 
-def handle_uploaded_file(f):
-    with open('some/file/name.jpeg', 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
+with open("place/place_23_index_to_label.json", "r", encoding="utf-8-sig") as f:
+    label_info = json.load(f)
+    # label_info = {v: k for k, v in label_info.items()}
+    print(label_info)
+
+model = load_model("place/model/place23_efnb0_3-0.26-0.92.h5")
+
+
+content_type = {
+    12: '관광지',
+    14: '문화시설',
+    15: '공연',
+    28: '레포츠',
+    32: '숙박',
+    38: '쇼핑',
+    39: '식당'
+}
 
 
 # image upload & classification
 class Classification(View):
+    def inference(image_path):
+        test = cv2.imread(image_path)
+        test = cv2.cvtColor(test, cv2.COLOR_BGR2RGB)
+        test = cv2.resize(test, (224, 224))
+        test = test[np.newaxis, :, :, :]
+        pred = model.predict(test, batch_size=1)
+        return np.argmax(pred)
+
     def get(self, img):
         pass
 
     def post(self, request):
         """
         파일명 수정 > time, idx
+        기능 추가 - 내가 검색했던 내용 볼 수 있게끔? > 예측결과도 저장????
+        predict 참고 : https://github.com/Development-On-Saturday/AIFOODIE_PROJECT/blob/main/django_dev/foods/views.py
         """
-        print(request.POST.get('image'))
-        print(request.POST.get('title'))
         img = request.FILES['image']
 
+        # 이미지 저장
         fs = FileSystemStorage()  # 이미지 파일을 저장할때 쓰는 함수
-        filename = fs.save(img.name, img)
-        uploaded_file_url = fs.url(filename)
-        print(uploaded_file_url)
+        now = datetime.now()
+        img_name = f"{now.strftime('%Y%m%d%H%M%S')}.jpeg"
+        filename = fs.save(img_name, img)
+        uploaded_file_url = fs.path(filename)
 
-        return JsonResponse({'name': '공원'}, status=200)
+        # 이미지 전처리 및 예측
+        pred_index = self.inference(uploaded_file_url)
+        pred = label_info[pred_index]
+        print('예측 결과는 >>> ', pred_index, pred)
 
-    def _make_sentence(self, word):
-        sentence_list = [
-            ['멋진 ', '이네요!'],
-            ['지금 놀러가기 딱 좋은 ', '이네요!'],
-            ['오늘 ', '을 가고 싶으시군요!'],
-            ['', ''],
-            ['', ''],
-        ]
-        pass
-
-"""
-TO DO
-1. 리뷰 수정 PATCH API > UserReviewView (PATCH)
-2. 마이페이지 좋아요 GET API
-"""
+        # sentence 선택
+        return JsonResponse({'name': pred, 'sentence': f'근사한 {pred}이네요!'}, status=200)
 
 
 class PlaceReviewView(View):
+    # 해당 플레이스에 대한 review, 별점 가져오기
     def get(self, request, place_id):
         place_type = request.GET.get('type')
         offset = int(request.GET.get('offset', 0))
@@ -77,12 +100,14 @@ class PlaceReviewView(View):
                 'user_nickname': review.user.nickname,
                 'grade': review.grade,
                 'text': review.text,
-                'date': review.updated_at
+                'date': review.updated_at.strftime("%Y-%m-%d %H:%M:%S")
             })
             grade += review.grade
             count += 1
-
-        grade = format(grade/count, ".2f")
+        if count > 0:
+            grade = format(grade/count, ".2f")
+        else:
+            grade = 0
         return JsonResponse({"reviews": result, 'grade': grade}, status=200)
 
 
@@ -99,7 +124,7 @@ class UserReviewView(View):
             'place_id': review.place_tour.id if review.place_type == 'tour' else review.place_kakao.id,
             'grade': review.grade,
             'text': review.text,
-            'date': review.updated_at,
+            'date': review.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             'place_title': review.place_tour.title if review.place_type == 'tour' else review.place_kakao.title,
             'address': review.place_tour.address if review.place_type == 'tour' else review.place_kakao.address
         } for review in reviews]
@@ -131,10 +156,12 @@ class UserReviewView(View):
                         mapx=request.POST.get('mapx'),
                         mapy=request.POST.get('mapy'),
                         modifiedtime=request.POST.get('modifiedtime'),
-                        readcount=request.POST.get('readcount'),
                         sigungucode=request.POST.get('sigungucode'),
                         tel=request.POST.get('tel'),
-                        title=request.POST.get('title')
+                        title=request.POST.get('title'),
+                        overview=request.POST.get('overview'),
+                        zipcode=request.POST.get('zipcode'),
+                        homepage=request.POST.get('homepage')
                     ).save()
                 else:
                     place = place[0]
@@ -191,3 +218,108 @@ class UserReviewView(View):
             return HttpResponse(status=200)
         except Review.DoesNotExist:
             return JsonResponse({'message': 'INVALID_REVIEW'}, status=400)
+
+
+class PlaceLikeView(View):
+    @login_decorator
+    def post(self, request):
+        place_type = request.POST.get('type')
+        place_id = request.POST.get('place_id')
+        user = request.user
+
+        if not place_type:
+            return JsonResponse({'message': 'PLACE_TYPE_ERROR'}, status=400)
+
+        try:
+            if place_type not in ['kakao', 'tour']:
+                return JsonResponse({'message': 'INVALID_PLACE_TYPE'}, status=400)
+
+            if place_type == 'tour':
+                like = UserLikeTourPlace.objects.get(place=place_id, user=user)
+            else:
+                like = UserLikeKakaoPlace.objects.get(place=place_id, user=user)
+
+            like.delete()
+            result = False
+
+        except UserLikeTourPlace.DoesNotExist:
+            if not TourPlace.objects.filter(id=place_id).exists():
+                TourPlace(
+                    id=place_id,
+                    address=f"{request.POST.get('addr1')} {request.POST.get('addr2')}",
+                    areacode=request.POST.get('areacode'),
+                    cat1=request.POST.get('cat1'),
+                    cat2=request.POST.get('cat2'),
+                    cat3=request.POST.get('cat3'),
+                    content_type_id=request.POST.get('content_type_id'),
+                    createdtime=request.POST.get('createdtime'),
+                    image1=request.POST.get('firstimage'),
+                    image2=request.POST.get('firstimage2'),
+                    mapx=request.POST.get('mapx'),
+                    mapy=request.POST.get('mapy'),
+                    modifiedtime=request.POST.get('modifiedtime'),
+                    sigungucode=request.POST.get('sigungucode'),
+                    tel=request.POST.get('tel'),
+                    title=request.POST.get('title'),
+                    overview=request.POST.get('overview'),
+                    zipcode=request.POST.get('zipcode'),
+                    homepage=request.POST.get('homepage')
+                ).save()
+            UserLikeTourPlace(
+                place_id=place_id,
+                user=user
+            ).save()
+            result = True
+        except UserLikeKakaoPlace.DoesNotExist:
+            if not KakaoPlace.objects.filter(id=place_id).exists():
+                KakaoPlace(
+                    id=place_id,
+                    title=request.POST.get('place_name'),
+                    place_url=request.POST.get('place_url'),
+                    category_name=request.POST.get('category_name'),
+                    category_group_code=request.POST.get('category_group_code'),
+                    category_group_name=request.POST.get('category_group_name'),
+                    tel=request.POST.get('phone'),
+                    address=request.POST.get('address_name'),
+                    road_address=request.POST.get('road_address_name'),
+                    mapx=request.POST.get('x'),
+                    mapy=request.POST.get('y')
+                ).save()
+            UserLikeKakaoPlace(
+                place_id=place_id,
+                user=user
+            ).save()
+            result = True
+        return JsonResponse({'message': result}, status=200)
+
+
+class UserLikeView(View):
+    # 유저가 누른 좋아요 장소에 대한 모든 리스트 가져오기
+    @login_decorator
+    def get(self, request):
+        user = request.user
+        places = UserLikeTourPlace.objects.select_related('place').filter(user=user).order_by('-created_at')
+        response = {
+            'all': [],
+            '관광지': [],
+            '문화시설': [],
+            '공연': [],
+            '식당': [],
+            '숙박': [],
+            '쇼핑': [],
+            '레포츠': []
+        }
+        for place in places:
+            data = {
+                'place_id': place.place.id,
+                'type': 'tour',
+                'content_type_id': place.place.content_type_id,
+                'title': place.place.title,
+                'image': place.place.image1,
+                'address': place.place.address,
+                'created_at': place.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            response['all'].append(data)
+            response[content_type[place.place.content_type_id]].append(data)
+
+        return JsonResponse(response, status=200)

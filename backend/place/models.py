@@ -11,15 +11,19 @@ class TourPlace(models.Model):
     cat3 = models.CharField(max_length=50)
     content_type_id = models.PositiveSmallIntegerField()
     createdtime = models.CharField(max_length=100)
-    image1 = models.TextField(blank=True)  # firstimage
-    image2 = models.TextField(blank=True)  # firstimage2
+    image1 = models.TextField(null=True)  # firstimage
+    image2 = models.TextField(null=True)  # firstimage2
     mapx = models.DecimalField(max_digits=9, decimal_places=6)
     mapy = models.DecimalField(max_digits=9, decimal_places=6)
     modifiedtime = models.CharField(max_length=100)
-    readcount = models.IntegerField(null=True)
     sigungucode = models.PositiveSmallIntegerField()
     tel = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=200)
+    overview = models.TextField(null=True)
+    zipcode = models.IntegerField(null=True)
+    homepage = models.TextField(null=True)
+
+    user_like = models.ManyToManyField(User, through='UserLikeTourPlace', related_name='user_like_tour_places_set')
 
     class Meta:
         db_table = 'tour_places'
@@ -38,6 +42,8 @@ class KakaoPlace(models.Model):
     mapx = models.DecimalField(max_digits=9, decimal_places=6)  # x
     mapy = models.DecimalField(max_digits=9, decimal_places=6)  # y
 
+    user_like = models.ManyToManyField(User, through='UserLikeKakaoPlace', related_name='user_like_kakao_places_set')
+
     class Meta:
         db_table = 'kakao_places'
 
@@ -54,3 +60,21 @@ class Review(models.Model):
 
     class Meta:
         db_table = 'reviews'
+
+
+class UserLikeTourPlace(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    place = models.ForeignKey(TourPlace, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_like_tour_places'
+
+
+class UserLikeKakaoPlace(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    place = models.ForeignKey(KakaoPlace, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_like_kakao_places'
