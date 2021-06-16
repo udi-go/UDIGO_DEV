@@ -17,7 +17,6 @@ interface MyApis {
     @POST("/user/login")
     fun loginWithKaKao(
             @Header("Authorization") token: String,
-            @Field("userId") userId: String,
             @Field("type") type: String = "kakao"
     ): Call<LoginResponse>
 
@@ -76,6 +75,14 @@ interface MyApis {
         @Field("text") contents: String
     ): Call<Unit>
 
+    @PATCH("/place/review")
+    fun patchReview(
+            @Header("Authorization") myToken: String,
+            @Field("review_id") reviewId: String,
+            @Field("grade") rating: Int,
+            @Field("text") contents: String
+    ): Call<Unit>
+
     @GET("/place/{placeId}/review")
     fun fetchPlaceReviewList(
             @Path("placeId") placeId: Int,
@@ -91,8 +98,27 @@ interface MyApis {
     @POST("/place/like")
     fun createTourLike(
             @Header("Authorization") myToken: String,
+            @Field("type") type: String = "tour",
             @Field("place_id") placeId: Int,
-            @Field("type") type: String = "tour"
+            @Field("addr1") addr1: String,
+            @Field("addr2") addr2: String,
+            @Field("areacode") areaCode: String,
+            @Field("cat1") cat1: String,
+            @Field("cat2") cat2: String,
+            @Field("cat3") cat3: String,
+            @Field("content_type_id") contentTypeId: String,
+            @Field("createdtime") createdTime: String,
+            @Field("firstimage") firstImage: String,
+            @Field("firstImage2") firstImage2: String,
+            @Field("mapx") mapX: String,
+            @Field("mapy") mapY: String,
+            @Field("modifiedtime") modifiedTime: String,
+            @Field("sigungucode") sigungucode: String,
+            @Field("tel") tel: String,
+            @Field("title") title: String,
+            @Field("overview") overview: String,
+            @Field("zipcode") zipCode: String,
+            @Field("homepage") homepage: String
     ): Call<Unit>
 
     @GET("/place/user/like")
@@ -125,7 +151,9 @@ interface MyApis {
 }
 
 data class LoginResponse(
-    val access_token: String
+    val id: Int,
+    val social_type: String,
+    val nickname: String
 )
 
 data class MyClassifyResponse(
@@ -143,5 +171,12 @@ data class FetchMyReviewListResponse(
 )
 
 data class FetchMyLikeListResponse(
-        val likes: List<MyLike>
+        val all: List<MyLike>,
+        val a12: List<MyLike>,
+        val a14: List<MyLike>,
+        val a15: List<MyLike>,
+        val a28: List<MyLike>,
+        val a32: List<MyLike>,
+        val a38: List<MyLike>,
+        val a39: List<MyLike>
 )

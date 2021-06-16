@@ -6,40 +6,51 @@
     android:layout_height="match_parent"
     tools:context=".activity.SearchDetailActivity">
 
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginStart="32dp"
-        android:src="@drawable/ic_back"
-        android:background="@android:color/transparent"
-        android:backgroundTint="@android:color/transparent"
-        android:onClick="onBack"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <TextView
-        android:id="@+id/titleTextView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/titleLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="40dp"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:textColor="@color/dark_text_14"
-        android:fontFamily="@font/arita_buri_b"
-        app:layout_constraintTop_toBottomOf="@+id/backButton"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:layout_marginStart="32dp"
+            android:src="@drawable/ic_back"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@android:color/transparent"
+            android:onClick="onBack"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="16dp"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="@color/dark_text_14"
+            android:fontFamily="@font/arita_buri_b"
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView"
+        app:layout_constraintTop_toBottomOf="@+id/titleLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -166,7 +177,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="80dp"
-                    android:layout_marginStart="32dp"
+                    android:layout_marginStart="40dp"
                     android:text="리뷰"
                     android:textStyle="bold"
                     android:textSize="20sp"
@@ -174,6 +185,18 @@
                     android:fontFamily="@font/arita_buri_b"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/gradeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/arita_buri_b"
+                    android:textColor="@color/dark_text_22"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/reviewTextView"
+                    app:layout_constraintStart_toEndOf="@+id/reviewTextView"/>
 
                 <ImageButton
                     android:id="@+id/createReviewButton"
@@ -194,6 +217,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
+                    android:layout_marginTop="16dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:layout_constraintTop_toBottomOf="@+id/reviewTextView"
                     app:layout_constraintStart_toStartOf="parent"
@@ -231,8 +255,8 @@
                     android:textStyle="bold"
                     android:textColor="@color/dark_text_22"
                     android:fontFamily="@font/arita_buri_b"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="80dp"
+                    android:layout_marginStart="40dp"
                     android:layout_marginEnd="32dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -268,4 +292,15 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/shadowLayout"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/drawable_vertical_shadow"
+        android:visibility="gone"
+        android:animateLayoutChanges="true"
+        app:layout_constraintTop_toBottomOf="@+id/titleLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

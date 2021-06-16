@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.kakao.sdk.auth.TokenManagerProvider
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.user.UserApiClient
 import com.ssac.place.R
+import com.ssac.place.networks.FetchMyLikeListResponse
+import com.ssac.place.networks.FetchMyReviewListResponse
 import com.ssac.place.networks.LoginResponse
 import com.ssac.place.networks.MyApis
 import com.ssac.place.repository.LocalRepository
@@ -34,14 +37,14 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun requestLogin(token: String, userId: String) {
-        MyApis.getInstance().loginWithKaKao(token, userId).enqueue(object : Callback<LoginResponse> {
+        MyApis.getInstance().loginWithKaKao("kakao " + token).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        LocalRepository.instance.setMyToken(this@LoginActivity, it.access_token)
-                        Log.d("AAA", it.access_token)
-                        setResult(RESULT_OK)
-                        finish()
+                        LocalRepository.instance.setMyId(this@LoginActivity, it.id)
+                        LocalRepository.instance.setMyNickname(this@LoginActivity, it.nickname)
+                        LocalRepository.instance.setMySocialType(this@LoginActivity, it.social_type)
+                        fetchMyLikeList()
                     }
                 }
             }
@@ -52,9 +55,44 @@ class LoginActivity : AppCompatActivity() {
         })
     }
 
+    private fun fetchMyLikeList() {
+        val type = LocalRepository.instance.getMySocialType(this)
+        val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
+        if (LocalRepository.instance.loggedIn(this) && !type.isNullOrEmpty() && !token.isNullOrEmpty()) {
+            MyApis.getInstance().fetchMyLikeList(type + " " + token).enqueue(object : Callback<FetchMyLikeListResponse> {
+                override fun onResponse(call: Call<FetchMyLikeListResponse>, response: Response<FetchMyLikeListResponse>) {
+                    response.body()?.all?.map { LocalRepository.instance.addLikeTour(it.place_id) }
+                    fetchMyReviewList()
+                }
+
+                override fun onFailure(call: Call<FetchMyLikeListResponse>, t: Throwable) {
+                    logout()
+                }
+            })
+        }
+    }
+
+    private fun fetchMyReviewList() {
+        val type = LocalRepository.instance.getMySocialType(this)
+        val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
+        if (LocalRepository.instance.loggedIn(this) && !type.isNullOrEmpty() && !token.isNullOrEmpty()) {
+            MyApis.getInstance().fetchMyReviewList(type + " " + token).enqueue(object : Callback<FetchMyReviewListResponse> {
+                override fun onResponse(call: Call<FetchMyReviewListResponse>, response: Response<FetchMyReviewListResponse>) {
+                    response.body()?.reviews?.map { LocalRepository.instance.addMyReview(it.review_id) }
+                    setResult(RESULT_OK)
+                    finish()
+                }
+
+                override fun onFailure(call: Call<FetchMyReviewListResponse>, t: Throwable) {
+                    logout()
+                }
+            })
+        }
+    }
+
     private fun logout() {
         UserApiClient.instance.logout {
-            Toast.makeText(this, "로그인에 실패했습니다", Toast.LENGTH_SHORT).show()
+            LocalRepository.instance.logout(this)
         }
     }
 

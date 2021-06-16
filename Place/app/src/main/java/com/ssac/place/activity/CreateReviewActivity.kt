@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import com.kakao.sdk.auth.TokenManager
+import com.kakao.sdk.auth.TokenManagerProvider
+import com.kakao.sdk.user.UserApiClient
 import com.ssac.place.R
 import com.ssac.place.models.KakaoDocument
 import com.ssac.place.models.TravelDetail
@@ -27,6 +30,10 @@ class CreateReviewActivity : AppCompatActivity() {
     private val kakaoDocument: KakaoDocument? by lazy { intent.getSerializableExtra("kakaoDocument") as? KakaoDocument }
     private val travelDetail: TravelDetail? by lazy { intent.getSerializableExtra("travelDetail") as? TravelDetail }
 
+    private val oldReviewId: String? by lazy { intent.getStringExtra("reviewId") }
+    private val oldContents: String? by lazy { intent.getStringExtra("contents") }
+    private val oldGrade: Int by lazy { intent.getIntExtra("grade", 0) }
+
     private var rate: Int = 5
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +45,10 @@ class CreateReviewActivity : AppCompatActivity() {
 
     private fun initLayout() {
         nameTextView.text = placeName
+        if (!oldReviewId.isNullOrEmpty()) {
+            reviewEditText.setText(oldContents)
+            setRating(oldGrade)
+        }
     }
 
     private fun setRating(rating: Int) {
@@ -64,12 +75,12 @@ class CreateReviewActivity : AppCompatActivity() {
         }
     }
 
-    private fun createReview(token: String, rating: Int, contents: String) {
+    private fun createReview(type: String, token: String, rating: Int, contents: String) {
         val document = kakaoDocument
         val travelDetail = travelDetail
         if (placeType=="kakao" && document!=null) {
             MyApis.getInstance().createKakaoReview(
-                    token,
+                    type + " " + token,
                     placeType,
                     document.id.toInt(),
                     document.place_name,
@@ -87,6 +98,7 @@ class CreateReviewActivity : AppCompatActivity() {
             ).enqueue(
                     object : Callback<Unit> {
                         override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                            LocalRepository.instance.setNeedUpdateReviewList()
                             setResult(RESULT_OK)
                             finish()
                         }
@@ -97,7 +109,7 @@ class CreateReviewActivity : AppCompatActivity() {
                     })
         } else if (placeType=="tour" && travelDetail!=null){
             MyApis.getInstance().createTourReview(
-                    token,
+                    type + " " + token,
                     placeType,
                     travelDetail.contentid.toInt(),
                     travelDetail.addr1 ?: "",
@@ -123,6 +135,7 @@ class CreateReviewActivity : AppCompatActivity() {
                     contents
             ).enqueue(object: Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                    LocalRepository.instance.setNeedUpdateReviewList()
                     setResult(RESULT_OK)
                     finish()
                 }
@@ -132,6 +145,20 @@ class CreateReviewActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    private fun updateReview(type: String, token: String, reviewId: String, rating: Int, contents: String) {
+        MyApis.getInstance().patchReview(type + " " + token, reviewId, rating, contents).enqueue(object : Callback<Unit> {
+            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                LocalRepository.instance.setNeedUpdateReviewList()
+                setResult(RESULT_OK)
+                finish()
+            }
+
+            override fun onFailure(call: Call<Unit>, t: Throwable) {
+                Toast.makeText(this@CreateReviewActivity, "네트워크를 확인하세요", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     fun onBack(view: View) {
@@ -153,11 +180,17 @@ class CreateReviewActivity : AppCompatActivity() {
         if (review.isEmpty()) {
             Toast.makeText(this, "내용을 입력하세요", Toast.LENGTH_SHORT).show()
         } else {
-            val token = LocalRepository.instance.getMyToken(this)
-            if (token == null) {
+            val type = LocalRepository.instance.getMySocialType(this)
+            val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
+            if (type == null || token == null) {
                 Toast.makeText(this, "로그인이 필요합니다", Toast.LENGTH_SHORT).show()
             } else {
-                createReview(token, rate, review)
+                val reviewId = oldReviewId
+                if (reviewId.isNullOrEmpty()) {
+                    createReview(type, token, rate, review)
+                } else {
+                    updateReview(type, token, reviewId, rate, review)
+                }
             }
         }
     }

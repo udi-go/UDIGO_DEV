@@ -38,6 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="장소이름"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:fontFamily="@font/arita_buri_b"
         android:textColor="@color/dark_text_22"

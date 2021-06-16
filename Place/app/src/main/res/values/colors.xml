@@ -11,6 +11,11 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray_text">#88888888</color>
 
+    <color name="classified_highlight">#77C3E1</color>
+
+<!--    android:startColor="#84F9B1"-->
+<!--    android:endColor="#8ED5EF"-->
+
     <color name="divider">#20000000</color>
     <color name="dialog_background">#30000000</color>
 

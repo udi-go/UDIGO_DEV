@@ -228,23 +228,19 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
             val position = it.tag as Int
             selectedDocument = documentList[position]
             selectedDocument?.let {
-                val intent = Intent(this, SearchDetailActivity::class.java)
-                intent.putExtra("document", it)
-                startActivity(intent)
+                moveToSearchDetail(it)
             }
         }
     }
 
-    fun onBack(view: View) {
-        finish()
+    private fun moveToSearchDetail(document: KakaoDocument) {
+        val intent = Intent(this, SearchDetailActivity::class.java)
+        intent.putExtra("document", document)
+        startActivity(intent)
     }
 
-    fun moveToDetail(view: View) {
-        selectedDocument?.let {
-            val intent = Intent(this, SearchDetailActivity::class.java)
-            intent.putExtra("document", it)
-            startActivity(intent)
-        }
+    fun onBack(view: View) {
+        finish()
     }
 
     companion object {

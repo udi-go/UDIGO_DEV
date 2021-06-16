@@ -14,7 +14,8 @@ import com.ssac.place.models.MyReview
 class MyReviewRecyclerViewAdapter(
     private val context: Context,
     private val reviewList: List<MyReview>,
-    private val onClickListener: View.OnClickListener
+    private val onClickListener: View.OnClickListener,
+    private val onEditClickListener: View.OnClickListener
 ): RecyclerView.Adapter<MyReviewRecyclerViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewRecyclerViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_my_review_recycler_view, parent, false)
@@ -23,6 +24,9 @@ class MyReviewRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: MyReviewRecyclerViewHolder, position: Int) {
         holder.setReview(context, reviewList[position])
+        holder.setEditButton(position, onEditClickListener)
+        holder.itemView.tag = position
+        holder.itemView.setOnClickListener(onClickListener)
     }
 
     override fun getItemCount(): Int {
@@ -31,6 +35,7 @@ class MyReviewRecyclerViewAdapter(
 }
 
 class MyReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    private val editTextView: TextView = view.findViewById(R.id.editTextView)
     private val imageView: ImageView = view.findViewById(R.id.imageView)
     private val nameTextView: TextView = view.findViewById(R.id.nameTextView)
     private val ratingImageView1: ImageView = view.findViewById(R.id.ratingImageView1)
@@ -41,6 +46,8 @@ class MyReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
     private val contentsTextView: TextView = view.findViewById(R.id.contentsTextView)
 
     fun setReview(context: Context, review: MyReview) {
+        Glide.with(context).load(review.image).circleCrop().placeholder(R.drawable.drawable_round_image_place_holder).into(imageView)
+        nameTextView.text = review.place_title
         if (review.grade > 1) {
             ratingImageView2.setImageResource(R.drawable.ic_star_on)
         } else {
@@ -62,5 +69,10 @@ class MyReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
             ratingImageView5.setImageResource(R.drawable.ic_star_off)
         }
         contentsTextView.text = review.text
+    }
+
+    fun setEditButton(position: Int, onClickListener: View.OnClickListener) {
+        editTextView.tag = position
+        editTextView.setOnClickListener(onClickListener)
     }
 }

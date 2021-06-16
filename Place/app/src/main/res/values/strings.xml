@@ -10,7 +10,7 @@
     <string name="search_fragment_cancel_button_select_image">다시 선택</string>
     <string name="search_fragment_search_button_select_image">검색</string>
     <string name="search_fragment_cancel_button_search_image">다른 이미지 검색</string>
-    <string name="search_fragment_search_button_search_image">근처 %s 조회</string>
+    <string name="search_fragment_search_button_search_image">지도에서 찾기</string>
 
     <string name="create_review_edit_text_hint"><font size="16">방문했었던 그 날의 소감을 말해주세요.</font></string>
 </resources>

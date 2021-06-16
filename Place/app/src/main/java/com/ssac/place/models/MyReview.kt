@@ -8,5 +8,6 @@ data class MyReview(
     val text: String,
     val date: String,
     val place_title: String,
-    val address: String
+    val address: String,
+    val image: String
 )

@@ -90,12 +90,12 @@ class RecommendTypeRecyclerAdapter(
                 TYPE_ALL to "전체",
                 "12" to "관광지",
                 "14" to "문화시설",
-                "15" to "축제/공연/행사",
+                "15" to "공연",
                 "25" to "여행코스",
                 "28" to "레포츠",
                 "32" to "숙박",
                 "38" to "쇼핑",
-                "39" to "음식"
+                "39" to "식당"
         )
     }
 }
@@ -111,11 +111,11 @@ class RecommendTypeRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view)
     fun setSelected(context: Context, selected: Boolean) {
         if (selected) {
             nameTextView.setTextColor(context.getColor(R.color.white))
-            nameTextView.setTypeface(nameTextView.typeface, Typeface.BOLD)
+            nameTextView.setTypeface(null, Typeface.BOLD)
             backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gradation_40_button_background)
         } else {
             nameTextView.setTextColor(context.getColor(R.color.black))
-            nameTextView.setTypeface(nameTextView.typeface, Typeface.NORMAL)
+            nameTextView.setTypeface(null, Typeface.NORMAL)
             backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gray_border_40_button_background)
         }
     }

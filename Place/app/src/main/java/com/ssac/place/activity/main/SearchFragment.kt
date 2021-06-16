@@ -209,12 +209,12 @@ class SearchFragment : Fragment() {
                 viewModel.photoUri?.let { classify(it) }
             }
         } else {
-            textView1.text = result.asClassifyResult(sentence, requireContext().getColor(R.color.green_dark))
+            textView1.text = result.asClassifyResult(sentence, requireContext().getColor(R.color.classified_highlight))
             cancelButton.text = getString(R.string.search_fragment_cancel_button_search_image)
             cancelButton.setOnClickListener {
                 refreshAllState()
             }
-            searchButton.text = getString(R.string.search_fragment_search_button_search_image, result)
+            searchButton.text = getString(R.string.search_fragment_search_button_search_image)
             searchButton.setOnClickListener {
                 moveToSearchResultActivity()
             }

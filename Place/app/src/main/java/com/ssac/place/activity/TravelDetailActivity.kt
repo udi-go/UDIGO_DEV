@@ -10,12 +10,15 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.text.HtmlCompat
 import androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT
 import androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.kakao.sdk.auth.AuthApiClient
+import com.kakao.sdk.auth.TokenManagerProvider
 import com.ssac.place.R
 import com.ssac.place.TravelApis
 import com.ssac.place.TravelDetailResponse
@@ -35,6 +38,8 @@ class TravelDetailActivity : AppCompatActivity() {
     private val latitude: String by lazy { intent.getStringExtra("latitude") as String }
     private val longitude: String by lazy { intent.getStringExtra("longitude") as String }
 
+    private val shadowLayout: ConstraintLayout by lazy { findViewById(R.id.shadowLayout) }
+    private val scrollView: NestedScrollView by lazy { findViewById(R.id.scrollView) }
     private val imageView: ImageView by lazy { findViewById(R.id.imageView) }
     private val titleTextView: TextView by lazy { findViewById(R.id.titleTextView) }
     private val likeButton: ImageButton by lazy { findViewById(R.id.likeButton) }
@@ -42,6 +47,7 @@ class TravelDetailActivity : AppCompatActivity() {
     private val homepageTextView: TextView by lazy { findViewById(R.id.homepageTextView) }
     private val telTextView: TextView by lazy { findViewById(R.id.telTextView) }
     private val overviewTextView: TextView by lazy { findViewById(R.id.overviewTextView) }
+    private val gradeTextView: TextView by lazy { findViewById(R.id.gradeTextView) }
     private val createReviewButton: ImageButton by lazy { findViewById(R.id.createReviewButton) }
     private val reviewRecyclerView: RecyclerView by lazy { findViewById(R.id.reviewRecyclerView) }
     private val noReviewTextView: TextView by lazy { findViewById(R.id.noReviewTextView) }
@@ -56,9 +62,32 @@ class TravelDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_travel_detail)
 
+        initLayout()
         requestTravelDetail()
         requestReviewList()
         requestRecommendation()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode== RESULT_OK) {
+            if (requestCode==LOGIN_REQUEST_CODE) {
+                reviewRecyclerView.adapter?.notifyDataSetChanged()
+                recommendationRecyclerView.adapter?.notifyDataSetChanged()
+            } else if (requestCode== CREATE_REVIEW_REQUEST_CODE) {
+                requestReviewList()
+            }
+        }
+    }
+
+    private fun initLayout() {
+        scrollView.setOnScrollChangeListener{ v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY==0) {
+                shadowLayout.visibility = View.GONE
+            } else {
+                shadowLayout.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun requestTravelDetail() {
@@ -83,6 +112,7 @@ class TravelDetailActivity : AppCompatActivity() {
             override fun onResponse(call: Call<FetchPlaceReviewListResponse>, response: Response<FetchPlaceReviewListResponse>) {
                 if (response.isSuccessful) {
                     setReviewList(response.body()?.reviews)
+                    gradeTextView.text = response.body()?.grade
                 }
             }
 
@@ -115,16 +145,43 @@ class TravelDetailActivity : AppCompatActivity() {
         })
     }
 
-    private fun createLike(token: String) {
+    private fun createLike(type: String, token: String) {
         likeButton.isEnabled = false
-        travelDetail?.contentid?.toIntOrNull()?.let {
-            MyApis.getInstance().createTourLike(token, it).enqueue(object : Callback<Unit> {
+        travelDetail?.let { travelDetail ->
+            MyApis.getInstance().createTourLike(
+                    type +" " + token,
+                    "tour",
+                    travelDetail.contentid.toInt(),
+                    travelDetail.addr1 ?: "",
+                    travelDetail.addr2 ?: "",
+                    travelDetail.areacode ?: "",
+                    travelDetail.cat1 ?: "",
+                    travelDetail.cat2 ?: "",
+                    travelDetail.cat3 ?: "",
+                    travelDetail.contentTypeId ?: "",
+                    travelDetail.createdtime,
+                    travelDetail.firstimage ?: "",
+                    travelDetail.firstimage2 ?: "",
+                    travelDetail.mapx ?: "",
+                    travelDetail.mapy ?: "",
+                    travelDetail.modifiedtime,
+                    travelDetail.sigungucode ?: "",
+                    travelDetail.tel ?: "",
+                    travelDetail.title,
+                    travelDetail.overview ?: "",
+                    travelDetail.zipcode ?: "",
+                    travelDetail.homepage ?: "",).enqueue(object : Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                    likeButton.isEnabled = true
+                    if (response.isSuccessful) {
 
+                    }
+                    refreshLikeButton()
                 }
 
                 override fun onFailure(call: Call<Unit>, t: Throwable) {
                     likeButton.isEnabled = true
+                    Log.d("AAA", t.localizedMessage)
                 }
             })
         }
@@ -176,6 +233,14 @@ class TravelDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun refreshLikeButton() {
+        if (LocalRepository.instance.isLikedTour(contentId)) {
+            likeButton.setImageResource(R.drawable.ic_place_like_on)
+        } else {
+            likeButton.setImageResource(R.drawable.ic_place_like_off)
+        }
+    }
+
     private fun showLoginAlert() {
         AlertDialog.Builder(this, R.style.LoginAlertDialog)
                 .setTitle("로그인이 필요한 기능입니다.")
@@ -206,13 +271,13 @@ class TravelDetailActivity : AppCompatActivity() {
             intent.putExtra("placeType", "tour")
             intent.putExtra("placeName", titleTextView.text.toString())
             intent.putExtra("travelDetail", it)
-            startActivity(intent)
+            startActivityForResult(intent, CREATE_REVIEW_REQUEST_CODE)
         }
     }
 
     private fun moveToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
+        startActivityForResult(intent, LOGIN_REQUEST_CODE)
     }
 
     fun onBack(view: View) {
@@ -220,19 +285,25 @@ class TravelDetailActivity : AppCompatActivity() {
     }
 
     fun onLike(view: View) {
-        val token = LocalRepository.instance.getMyToken(this)
-        if (token!=null) {
-            createLike(token)
+        val type = LocalRepository.instance.getMySocialType(this)
+        val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
+        if (LocalRepository.instance.loggedIn(this) && !type.isNullOrEmpty() && !token.isNullOrEmpty()) {
+            createLike(type, token)
         } else {
             showLoginAlert()
         }
     }
 
     fun onCreateReview(view: View) {
-        if (LocalRepository.instance.getMyToken(this)!=null) {
+        if (LocalRepository.instance.loggedIn(this)) {
             moveToCreateReview()
         } else {
             showLoginAlert()
         }
+    }
+
+    companion object {
+        private const val LOGIN_REQUEST_CODE = 6021
+        private const val CREATE_REVIEW_REQUEST_CODE = 6022
     }
 }

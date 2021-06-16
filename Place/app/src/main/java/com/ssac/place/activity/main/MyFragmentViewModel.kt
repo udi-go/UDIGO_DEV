@@ -6,4 +6,6 @@ import com.ssac.place.models.MyReview
 class MyFragmentViewModel : ViewModel() {
     // TODO: Implement the ViewModel
     var myReviewList: List<MyReview>? = null
+
+
 }

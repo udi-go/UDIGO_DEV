@@ -1,38 +1,19 @@
 package com.ssac.place.activity.main
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.kakao.sdk.user.UserApiClient
+import com.kakao.sdk.auth.TokenManagerProvider
 import com.ssac.place.R
-import com.ssac.place.activity.LoginActivity
-import com.ssac.place.activity.MyPageActivity
-import com.ssac.place.activity.SearchDetailActivity
-import com.ssac.place.activity.SearchResultActivity
-import com.ssac.place.custom.SelectPhotoDialog
-import com.ssac.place.extensions.asClassifyResult
-import com.ssac.place.extensions.loadBitmap
-import com.ssac.place.models.KakaoDocument
+import com.ssac.place.networks.FetchMyLikeListResponse
+import com.ssac.place.networks.FetchMyReviewListResponse
 import com.ssac.place.networks.MyApis
-import com.ssac.place.networks.MyClassifyResponse
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
+import com.ssac.place.repository.LocalRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
-import java.util.*
 
 class MainActivity : FragmentActivity() {
     private val viewPager: ViewPager2 by lazy { findViewById(R.id.viewPager) }
@@ -55,6 +36,32 @@ class MainActivity : FragmentActivity() {
                 myButton.isSelected = position == 3
             }
         })
+        fetchUserInformation()
+    }
+
+    private fun fetchUserInformation() {
+        val type = LocalRepository.instance.getMySocialType(this)
+        val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
+        if (LocalRepository.instance.loggedIn(this) && !type.isNullOrEmpty() && !token.isNullOrEmpty()) {
+            MyApis.getInstance().fetchMyLikeList(type + " " + token).enqueue(object : Callback<FetchMyLikeListResponse> {
+                override fun onResponse(call: Call<FetchMyLikeListResponse>, response: Response<FetchMyLikeListResponse>) {
+                    response.body()?.all?.map { LocalRepository.instance.addLikeTour(it.place_id) }
+                }
+
+                override fun onFailure(call: Call<FetchMyLikeListResponse>, t: Throwable) {
+
+                }
+            })
+            MyApis.getInstance().fetchMyReviewList(type + " " + token).enqueue(object : Callback<FetchMyReviewListResponse> {
+                override fun onResponse(call: Call<FetchMyReviewListResponse>, response: Response<FetchMyReviewListResponse>) {
+                    response.body()?.reviews?.map { LocalRepository.instance.addMyReview(it.review_id) }
+                }
+
+                override fun onFailure(call: Call<FetchMyReviewListResponse>, t: Throwable) {
+
+                }
+            })
+        }
     }
 
     fun onHome(view: View) {
