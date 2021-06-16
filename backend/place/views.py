@@ -26,17 +26,6 @@ with open("place/place_23_index_to_label.json", "r", encoding="utf-8-sig") as f:
 model = load_model("place/model/place23_efnb0_3-0.26-0.92.h5")
 
 
-content_type = {
-    12: '관광지',
-    14: '문화시설',
-    15: '공연',
-    28: '레포츠',
-    32: '숙박',
-    38: '쇼핑',
-    39: '식당'
-}
-
-
 # image upload & classification
 class Classification(View):
     def inference(image_path):
@@ -118,7 +107,8 @@ class UserReviewView(View):
         limit = int(request.GET.get('limit', 10))
 
         reviews = Review.objects.select_related('place_tour', 'place_kakao').filter(user_id=request.user).order_by('-updated_at')[offset*limit:(offset+1)*limit]
-        reviews = [{
+
+        result = [{
             'review_id': review.id,
             'type': review.place_type,
             'place_id': review.place_tour.id if review.place_type == 'tour' else review.place_kakao.id,
@@ -126,9 +116,10 @@ class UserReviewView(View):
             'text': review.text,
             'date': review.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             'place_title': review.place_tour.title if review.place_type == 'tour' else review.place_kakao.title,
-            'address': review.place_tour.address if review.place_type == 'tour' else review.place_kakao.address
+            'address': review.place_tour.address if review.place_type == 'tour' else review.place_kakao.address,
+            'image': review.place_tour.image1 if review.place_type == 'tour' and review.place_tour.image1 is not None else ""
         } for review in reviews]
-        return JsonResponse({'reviews': reviews}, status=200)
+        return JsonResponse({'reviews': result}, status=200)
 
     @login_decorator
     def post(self, request):
@@ -163,8 +154,9 @@ class UserReviewView(View):
                         zipcode=request.POST.get('zipcode'),
                         homepage=request.POST.get('homepage')
                     ).save()
-                else:
-                    place = place[0]
+                place = TourPlace.objects.filter(id=place_id)
+                place = place[0]
+
                 Review(
                     place_type=place_type,
                     place_tour=place,
@@ -175,7 +167,7 @@ class UserReviewView(View):
             else:
                 place = KakaoPlace.objects.filter(id=place_id)
                 if not place.exists():
-                    place = KakaoPlace(
+                    KakaoPlace(
                         id=place_id,
                         title=request.POST.get('place_name'),
                         place_url=request.POST.get('place_url'),
@@ -188,8 +180,9 @@ class UserReviewView(View):
                         mapx=request.POST.get('x'),
                         mapy=request.POST.get('y')
                     ).save()
-                else:
-                    place = place[0]
+                place = KakaoPlace.objects.filter(id=place_id)
+                place = place[0]
+
                 Review(
                     place_type=place_type,
                     place_kakao=place,
@@ -235,8 +228,10 @@ class PlaceLikeView(View):
                 return JsonResponse({'message': 'INVALID_PLACE_TYPE'}, status=400)
 
             if place_type == 'tour':
+                print('tour check')
                 like = UserLikeTourPlace.objects.get(place=place_id, user=user)
             else:
+                print('kakao check')
                 like = UserLikeKakaoPlace.objects.get(place=place_id, user=user)
 
             like.delete()
@@ -301,13 +296,13 @@ class UserLikeView(View):
         places = UserLikeTourPlace.objects.select_related('place').filter(user=user).order_by('-created_at')
         response = {
             'all': [],
-            '관광지': [],
-            '문화시설': [],
-            '공연': [],
-            '식당': [],
-            '숙박': [],
-            '쇼핑': [],
-            '레포츠': []
+            'a12': [],
+            'a14': [],
+            'a15': [],
+            'a28': [],
+            'a32': [],
+            'a38': [],
+            'a39': []
         }
         for place in places:
             data = {
@@ -320,6 +315,5 @@ class UserLikeView(View):
                 'created_at': place.created_at.strftime("%Y-%m-%d %H:%M:%S")
             }
             response['all'].append(data)
-            response[content_type[place.place.content_type_id]].append(data)
-
+            response['a'+str(place.place.content_type_id)].append(data)
         return JsonResponse(response, status=200)
