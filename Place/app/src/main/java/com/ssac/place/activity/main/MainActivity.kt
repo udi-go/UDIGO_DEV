@@ -8,7 +8,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.kakao.sdk.auth.TokenManagerProvider
 import com.ssac.place.R
 import com.ssac.place.networks.FetchMyLikeListResponse
-import com.ssac.place.networks.FetchMyReviewListResponse
 import com.ssac.place.networks.MyApis
 import com.ssac.place.repository.LocalRepository
 import retrofit2.Call
@@ -49,15 +48,6 @@ class MainActivity : FragmentActivity() {
                 }
 
                 override fun onFailure(call: Call<FetchMyLikeListResponse>, t: Throwable) {
-
-                }
-            })
-            MyApis.getInstance().fetchMyReviewList(type + " " + token).enqueue(object : Callback<FetchMyReviewListResponse> {
-                override fun onResponse(call: Call<FetchMyReviewListResponse>, response: Response<FetchMyReviewListResponse>) {
-                    response.body()?.reviews?.map { LocalRepository.instance.addMyReview(it.review_id) }
-                }
-
-                override fun onFailure(call: Call<FetchMyReviewListResponse>, t: Throwable) {
 
                 }
             })

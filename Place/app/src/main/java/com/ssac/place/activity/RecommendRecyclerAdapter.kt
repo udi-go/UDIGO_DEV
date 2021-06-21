@@ -5,7 +5,7 @@ import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
@@ -18,8 +18,7 @@ import com.ssac.place.models.TravelRecommend
 class RecommendRecyclerAdapter(
     private val context: Context,
     private val recommendList: List<TravelRecommend>,
-    private val onClickListener: View.OnClickListener
-): RecyclerView.Adapter<RecommendRecyclerViewHolder>() {
+    private val onClickListener: View.OnClickListener): RecyclerView.Adapter<RecommendRecyclerViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecommendRecyclerViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_recommend_recycler_view_holder, parent, false)
         return RecommendRecyclerViewHolder(view)
@@ -35,6 +34,7 @@ class RecommendRecyclerAdapter(
 }
 
 class RecommendRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    private val likeButton: ImageButton = view.findViewById(R.id.likeButton)
     private val imageView: ImageView = view.findViewById(R.id.imageView)
     private val nameTextView: TextView = view.findViewById(R.id.nameTextView)
     private val addressTextView: TextView = view.findViewById(R.id.addressTextView)

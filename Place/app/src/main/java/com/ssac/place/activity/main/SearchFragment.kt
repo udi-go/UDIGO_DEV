@@ -86,7 +86,7 @@ class SearchFragment : Fragment() {
             showSelectAlert()
         }
         cancelButton.setOnClickListener {
-            removeSelectedPhoto()
+            showSelectAlert()
         }
         searchButton.setOnClickListener {
             viewModel.photoUri?.let { classify(it) }
@@ -152,6 +152,15 @@ class SearchFragment : Fragment() {
             selectedImageView.setImageBitmap(it)
             emptyImageLayout.visibility = View.GONE
             selectedImageLayout.visibility = View.VISIBLE
+
+            cancelButton.text = getString(R.string.search_fragment_cancel_button_select_image)
+            cancelButton.setOnClickListener {
+                showSelectAlert()
+            }
+            searchButton.text = getString(R.string.search_fragment_search_button_select_image)
+            searchButton.setOnClickListener {
+                viewModel.photoUri?.let { classify(it) }
+            }
         }
     }
 
@@ -168,10 +177,10 @@ class SearchFragment : Fragment() {
     }
 
     private fun classify(uri: Uri) {
-        viewModel.searchResult = "공원"
-        viewModel.searchResultSentence = "멋진 공원이네요!"
-        showClassifyResult()
-        return
+//        viewModel.searchResult = "공원"
+//        viewModel.searchResultSentence = "멋진 공원이네요!"
+//        showClassifyResult()
+//        return
         requireContext().contentResolver.openInputStream(uri)?.readBytes()?.toRequestBody("multipart/form-data".toMediaType())?.let { body ->
             val requestBody = MultipartBody.Part.createFormData("image", "image.jpg", body)
             MyApis.getInstance().classify(requestBody).enqueue(object :
@@ -210,9 +219,10 @@ class SearchFragment : Fragment() {
             }
         } else {
             textView1.text = result.asClassifyResult(sentence, requireContext().getColor(R.color.classified_highlight))
+            textView2.text = ""
             cancelButton.text = getString(R.string.search_fragment_cancel_button_search_image)
             cancelButton.setOnClickListener {
-                refreshAllState()
+                showSelectAlert()
             }
             searchButton.text = getString(R.string.search_fragment_search_button_search_image)
             searchButton.setOnClickListener {

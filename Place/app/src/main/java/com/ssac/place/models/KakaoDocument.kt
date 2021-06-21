@@ -53,6 +53,7 @@ data class KakaoDocument(
             customSelectedImageResourceId = R.drawable.ic_green_marker
             isCustomImageAutoscale = true
             setCustomImageAnchor(0.5f, 1.0f)
+            isShowDisclosureButtonOnCalloutBalloon = false
         }
     }
 }

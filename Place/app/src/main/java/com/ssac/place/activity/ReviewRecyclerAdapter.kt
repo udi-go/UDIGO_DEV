@@ -14,7 +14,7 @@ import com.ssac.place.repository.LocalRepository
 class ReviewRecyclerAdapter(
         private val context: Context,
         private val reviewList: List<PlaceReview>,
-        private val onEditClickListener: View.OnClickListener?
+        private val onEditClickListener: View.OnClickListener
 ): RecyclerView.Adapter<ReviewRecyclerViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewRecyclerViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_review_recycler_view, parent, false)
@@ -22,7 +22,9 @@ class ReviewRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: ReviewRecyclerViewHolder, position: Int) {
-        holder.setReview(reviewList[position], position, onEditClickListener)
+        val review = reviewList[position]
+        holder.setReview(review)
+        holder.setEditButton(LocalRepository.instance.getMyId(context)==review.user_id.toInt(), position, onEditClickListener)
     }
 
     override fun getItemCount(): Int {
@@ -38,18 +40,10 @@ class ReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
     private val ratingImageView3: ImageView = view.findViewById(R.id.ratingImageView3)
     private val ratingImageView4: ImageView = view.findViewById(R.id.ratingImageView4)
     private val ratingImageView5: ImageView = view.findViewById(R.id.ratingImageView5)
+    private val dateTextView: TextView = view.findViewById(R.id.dateTextView)
     private val contentsTextView: TextView = view.findViewById(R.id.contentsTextView)
 
-    fun setReview(review: PlaceReview, position: Int, onEditClickListener: View.OnClickListener?) {
-        if (LocalRepository.instance.isMyReview(review.review_id)) {
-            editTextView.visibility = View.VISIBLE
-            editTextView.tag = position
-            editTextView.setOnClickListener(onEditClickListener)
-        } else {
-            editTextView.visibility = View.GONE
-            editTextView.tag = -1
-            editTextView.setOnClickListener(null)
-        }
+    fun setReview(review: PlaceReview) {
         userNameTextView.text = review.user_nickname
         if (review.grade.toInt() > 1) {
             ratingImageView2.setImageResource(R.drawable.ic_star_on)
@@ -71,6 +65,19 @@ class ReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
         } else {
             ratingImageView5.setImageResource(R.drawable.ic_star_off)
         }
+        dateTextView.text = review.displayDate()
         contentsTextView.text = review.text
+    }
+
+    fun setEditButton(show: Boolean, position: Int, onEditClickListener: View.OnClickListener) {
+        if (show) {
+            editTextView.visibility = View.VISIBLE
+            editTextView.tag = position
+            editTextView.setOnClickListener(onEditClickListener)
+        } else {
+            editTextView.visibility = View.GONE
+            editTextView.tag = -1
+            editTextView.setOnClickListener(null)
+        }
     }
 }

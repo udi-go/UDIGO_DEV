@@ -8,9 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.kakao.sdk.auth.TokenManagerProvider
-import com.ssac.place.MyApplication
 import com.ssac.place.R
 import com.ssac.place.activity.LoginActivity
 import com.ssac.place.activity.TravelDetailActivity
@@ -33,6 +34,8 @@ class LikeFragment : Fragment() {
     private lateinit var loginButton: Button
     private lateinit var typeRecyclerView: RecyclerView
     private lateinit var likeRecyclerView: RecyclerView
+    private lateinit var noLikeTextView: TextView
+    private lateinit var shadowLayout: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +54,18 @@ class LikeFragment : Fragment() {
         loginButton = view.findViewById(R.id.loginButton)
         typeRecyclerView = view.findViewById(R.id.typeRecyclerView)
         likeRecyclerView = view.findViewById(R.id.likeRecyclerView)
+        noLikeTextView = view.findViewById(R.id.noLikeTextView)
+        shadowLayout = view.findViewById(R.id.shadowLayout)
+        likeRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(-1)) {
+                    shadowLayout.visibility = View.GONE
+                } else {
+                    shadowLayout.visibility = View.VISIBLE
+                }
+            }
+        })
     }
 
     override fun onResume() {
@@ -77,8 +92,6 @@ class LikeFragment : Fragment() {
         val likeList = viewModel.myLikeList
         if (likeList==null || LocalRepository.instance.needUpdateLikeList()) {
             fetchMyLikeList(type, token)
-        } else {
-            refreshLikeRecyclerView(likeList)
         }
     }
 
@@ -108,13 +121,22 @@ class LikeFragment : Fragment() {
     }
 
     private fun refreshLikeRecyclerView(list: List<MyLike>) {
-        typeRecyclerView.adapter = LikeTypeRecyclerViewAdapter(requireContext(), listOf("전체", "관광지", "문화시설", "공연", "레포츠", "숙박", "쇼핑", "식당")) {
-            val type = it.tag as String
-            changeLikeType(type)
-        }
-        likeRecyclerView.adapter = LikeRecyclerViewAdapter(requireContext(), list) {
-            val placeId = it.tag as String
-            moveToTravelDetail(placeId)
+        if (list.isEmpty()) {
+            noLikeTextView.visibility = View.VISIBLE
+            typeRecyclerView.visibility = View.GONE
+            likeRecyclerView.visibility = View.GONE
+        } else {
+            noLikeTextView.visibility = View.GONE
+            typeRecyclerView.visibility = View.VISIBLE
+            likeRecyclerView.visibility = View.VISIBLE
+            typeRecyclerView.adapter = LikeTypeRecyclerViewAdapter(requireContext(), listOf("전체", "관광지", "문화시설", "공연", "레포츠", "숙박", "쇼핑", "식당")) {
+                val type = it.tag as String
+                changeLikeType(type)
+            }
+            likeRecyclerView.adapter = LikeRecyclerViewAdapter(requireContext(), list) {
+                val placeId = it.tag as String
+                moveToTravelDetail(placeId)
+            }
         }
     }
 
@@ -140,8 +162,8 @@ class LikeFragment : Fragment() {
         viewModel.myLikeList?.firstOrNull{ it.place_id == placeId }?.let {
             val intent = Intent(requireContext(), TravelDetailActivity::class.java)
             intent.putExtra("contentId", it.place_id)
-//            intent.putExtra("latitude", recommend.mapy)
-//            intent.putExtra("longitude", recommend.mapx)
+            intent.putExtra("latitude", it.mapy)
+            intent.putExtra("longitude", it.mapx)
             startActivity(intent)
         }
     }

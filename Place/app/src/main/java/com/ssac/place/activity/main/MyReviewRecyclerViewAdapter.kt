@@ -43,6 +43,7 @@ class MyReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
     private val ratingImageView3: ImageView = view.findViewById(R.id.ratingImageView3)
     private val ratingImageView4: ImageView = view.findViewById(R.id.ratingImageView4)
     private val ratingImageView5: ImageView = view.findViewById(R.id.ratingImageView5)
+    private val dateTextView: TextView = view.findViewById(R.id.dateTextView)
     private val contentsTextView: TextView = view.findViewById(R.id.contentsTextView)
 
     fun setReview(context: Context, review: MyReview) {
@@ -68,6 +69,7 @@ class MyReviewRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
         } else {
             ratingImageView5.setImageResource(R.drawable.ic_star_off)
         }
+        dateTextView.text = review.displayDate()
         contentsTextView.text = review.text
     }
 

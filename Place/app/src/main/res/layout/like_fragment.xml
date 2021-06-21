@@ -37,13 +37,15 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/typeRecyclerView"
         android:layout_width="0dp"
-        android:layout_height="40dp"
+        android:layout_height="72dp"
         android:orientation="horizontal"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
         android:clipToPadding="false"
         android:visibility="gone"
+        android:overScrollMode="never"
+        android:nestedScrollingEnabled="true"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView"
         app:layout_constraintStart_toStartOf="parent"
@@ -53,13 +55,45 @@
         android:id="@+id/likeRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="112dp"
+        android:layout_marginTop="16dp"
+        android:paddingBottom="112dp"
+        android:clipToPadding="false"
         android:visibility="gone"
+        android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@+id/typeRecyclerView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <TextView
+        android:id="@+id/noLikeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="마음에 드는 장소를 좋아요에 추가해보세요"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/logoImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/shadowLayout"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/drawable_vertical_shadow"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/typeRecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="112dp"
+        android:background="@drawable/drawable_white_gradation_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

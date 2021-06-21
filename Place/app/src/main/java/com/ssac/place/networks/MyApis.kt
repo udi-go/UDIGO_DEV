@@ -75,6 +75,7 @@ interface MyApis {
         @Field("text") contents: String
     ): Call<Unit>
 
+    @FormUrlEncoded
     @PATCH("/place/review")
     fun patchReview(
             @Header("Authorization") myToken: String,
@@ -119,7 +120,7 @@ interface MyApis {
             @Field("overview") overview: String,
             @Field("zipcode") zipCode: String,
             @Field("homepage") homepage: String
-    ): Call<Unit>
+    ): Call<CreateTourLikeResponse>
 
     @GET("/place/user/like")
     fun fetchMyLikeList(
@@ -130,7 +131,7 @@ interface MyApis {
         private var instance: MyApis? = null
         private val gson = GsonBuilder().create()
 
-        private const val BASE_URL = "http://192.168.10.240:8000/"
+        private const val BASE_URL = "http://13.209.16.54:8000/"
         fun getInstance(): MyApis {
             if (instance == null) {
                 instance = Retrofit.Builder()
@@ -168,6 +169,10 @@ data class FetchPlaceReviewListResponse(
 
 data class FetchMyReviewListResponse(
         val reviews: List<MyReview>
+)
+
+data class CreateTourLikeResponse(
+        val message: Boolean
 )
 
 data class FetchMyLikeListResponse(

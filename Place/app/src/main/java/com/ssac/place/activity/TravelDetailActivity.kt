@@ -26,6 +26,7 @@ import com.ssac.place.TravelSearchResponse
 import com.ssac.place.models.PlaceReview
 import com.ssac.place.models.TravelDetail
 import com.ssac.place.models.TravelRecommend
+import com.ssac.place.networks.CreateTourLikeResponse
 import com.ssac.place.networks.FetchPlaceReviewListResponse
 import com.ssac.place.networks.MyApis
 import com.ssac.place.repository.LocalRepository
@@ -66,6 +67,7 @@ class TravelDetailActivity : AppCompatActivity() {
         requestTravelDetail()
         requestReviewList()
         requestRecommendation()
+        refreshLikeButton()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -130,7 +132,7 @@ class TravelDetailActivity : AppCompatActivity() {
                     response: Response<TravelSearchResponse>
             ) {
                 if (response.isSuccessful) {
-                    val items = response.body()?.body?.items
+                    val items = response.body()?.body?.items?.filter { it.contentid != contentId }
                     if (items == null) {
 
                     } else {
@@ -170,16 +172,23 @@ class TravelDetailActivity : AppCompatActivity() {
                     travelDetail.title,
                     travelDetail.overview ?: "",
                     travelDetail.zipcode ?: "",
-                    travelDetail.homepage ?: "",).enqueue(object : Callback<Unit> {
-                override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                    travelDetail.homepage ?: "",).enqueue(object : Callback<CreateTourLikeResponse> {
+                override fun onResponse(call: Call<CreateTourLikeResponse>, response: Response<CreateTourLikeResponse>) {
                     likeButton.isEnabled = true
                     if (response.isSuccessful) {
-
+                        response.body()?.message?.let {
+                            if (it) {
+                                LocalRepository.instance.addLikeTour(contentId)
+                            } else {
+                                LocalRepository.instance.removeLikeTour(contentId)
+                            }
+                            LocalRepository.instance.setNeedUpdateLikeList()
+                        }
                     }
                     refreshLikeButton()
                 }
 
-                override fun onFailure(call: Call<Unit>, t: Throwable) {
+                override fun onFailure(call: Call<CreateTourLikeResponse>, t: Throwable) {
                     likeButton.isEnabled = true
                     Log.d("AAA", t.localizedMessage)
                 }
@@ -189,7 +198,7 @@ class TravelDetailActivity : AppCompatActivity() {
 
     private fun setTravelDetail(detail: TravelDetail) {
         travelDetail = detail
-        Glide.with(this).load(detail.firstimage).into(imageView)
+        Glide.with(this).load(detail.firstimage).placeholder(R.drawable.ic_no_image2).into(imageView)
         titleTextView.text = detail.title
         addressTextView.text = detail.address()
         homepageTextView.text = HtmlCompat.fromHtml(detail.homepage(), FROM_HTML_MODE_LEGACY)
@@ -207,7 +216,11 @@ class TravelDetailActivity : AppCompatActivity() {
         } else {
             noReviewTextView.visibility = View.GONE
             reviewRecyclerView.visibility = View.VISIBLE
-            reviewRecyclerView.adapter = ReviewRecyclerAdapter(this, list, null)
+            reviewRecyclerView.adapter = ReviewRecyclerAdapter(this, list) {
+                val position = it.tag as Int
+                val review = list[position]
+                moveToCreateReviewForEdit(review.review_id, review.grade, review.text)
+            }
         }
     }
 
@@ -273,6 +286,16 @@ class TravelDetailActivity : AppCompatActivity() {
             intent.putExtra("travelDetail", it)
             startActivityForResult(intent, CREATE_REVIEW_REQUEST_CODE)
         }
+    }
+
+    private fun moveToCreateReviewForEdit(reviewId: String, rating: String, contents: String) {
+        val intent = Intent(this, CreateReviewActivity::class.java)
+        intent.putExtra("placeType", "tour")
+        intent.putExtra("placeName", titleTextView.text.toString())
+        intent.putExtra("reviewId", reviewId)
+        intent.putExtra("grade", rating.toInt())
+        intent.putExtra("contents", contents)
+        startActivityForResult(intent, CREATE_REVIEW_REQUEST_CODE)
     }
 
     private fun moveToLogin() {

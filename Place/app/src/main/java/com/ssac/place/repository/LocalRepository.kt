@@ -38,7 +38,6 @@ class LocalRepository {
         setMySocialType(context, null)
         setNeedUpdateReviewList()
         setNeedUpdateLikeList()
-        reviewIdList.clear()
         likeTourPlaceIdList.clear()
     }
 
@@ -62,18 +61,13 @@ class LocalRepository {
         likeTourPlaceIdList.add(placeId)
     }
 
+    fun removeLikeTour(placeId: String) {
+        likeTourPlaceIdList.remove(placeId)
+    }
+
     fun isLikedTour(placeId: String): Boolean {
         return likeTourPlaceIdList.contains(placeId)
     }
-
-    fun addMyReview(reviewId: String) {
-        reviewIdList.add(reviewId)
-    }
-
-    fun isMyReview(reviewId: String): Boolean {
-        return reviewIdList.contains(reviewId)
-    }
-
 
     companion object {
         private const val PREFERENCE_NAME = "place_preference"
@@ -85,7 +79,6 @@ class LocalRepository {
 
         private var needUpdateLikeList: Boolean = false
         private var needUpdateReviewList: Boolean = false
-        private var reviewIdList: MutableSet<String> = mutableSetOf()
         private var likeTourPlaceIdList: MutableSet<String> = mutableSetOf()
     }
 }

@@ -10,14 +10,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import com.kakao.sdk.auth.TokenManagerProvider
+import com.kakao.sdk.user.UserApiClient
 import com.ssac.place.MyApplication
 import com.ssac.place.R
 import com.ssac.place.activity.CreateReviewActivity
 import com.ssac.place.activity.LoginActivity
+import com.ssac.place.activity.SearchDetailActivity
 import com.ssac.place.activity.TravelDetailActivity
+import com.ssac.place.models.KakaoDocument
 import com.ssac.place.models.MyReview
 import com.ssac.place.networks.FetchMyReviewListResponse
 import com.ssac.place.networks.MyApis
@@ -37,7 +41,10 @@ class MyFragment : Fragment() {
     private lateinit var loginButton: Button
     private lateinit var userLayout: NestedScrollView
     private lateinit var userNameTextView: TextView
+    private lateinit var logoutButton : Button
     private lateinit var reviewRecyclerView: RecyclerView
+    private lateinit var noReviewTextView: TextView
+    private lateinit var shadowLayout: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +64,17 @@ class MyFragment : Fragment() {
         loginButton = view.findViewById(R.id.loginButton)
         userLayout = view.findViewById(R.id.userLayout)
         userNameTextView = view.findViewById(R.id.userNameTextView)
+        logoutButton = view.findViewById(R.id.logoutButton)
         reviewRecyclerView = view.findViewById(R.id.reviewRecyclerView)
+        noReviewTextView = view.findViewById(R.id.noReviewTextView)
+        shadowLayout = view.findViewById(R.id.shadowLayout)
+        userLayout.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY==0) {
+                shadowLayout.visibility = View.GONE
+            } else {
+                shadowLayout.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun onResume() {
@@ -69,11 +86,16 @@ class MyFragment : Fragment() {
             loginButton.visibility = View.GONE
             userLayout.visibility = View.VISIBLE
             userNameTextView.text = LocalRepository.instance.getMyNickname(requireContext()) + " 님"
+            logoutButton.setOnClickListener {
+                logout()
+            }
             showMyReviewList(type, token)
         } else {
+            viewModel.myReviewList = null
             loginButton.visibility = View.VISIBLE
             userLayout.visibility = View.GONE
             userNameTextView.text = null
+            shadowLayout.visibility = View.GONE
             loginButton.setOnClickListener {
                 moveToLogin()
             }
@@ -84,28 +106,34 @@ class MyFragment : Fragment() {
         val reviewList = viewModel.myReviewList
         if (reviewList==null || LocalRepository.instance.needUpdateReviewList()) {
             fetchMyReviewList(type, token)
-        } else {
-            refreshReviewRecyclerView(reviewList)
         }
     }
 
     private fun refreshReviewRecyclerView(reviewList: List<MyReview>) {
-        reviewRecyclerView.adapter = MyReviewRecyclerViewAdapter(requireContext(), reviewList, {
-            val position = it.tag as Int
-            val reviewList = viewModel.myReviewList
-            if (!reviewList.isNullOrEmpty()) {
-                val review = reviewList[position]
-                if (review.type == "tour") {
-                    moveToTravelDetail(review.place_id, "", "")
-                } else if (review.type == "kakao") {
-                    // TODO 카카오 위치로 어떻게 이동시키지??
+        if (reviewList.isEmpty()) {
+            noReviewTextView.visibility = View.VISIBLE
+            reviewRecyclerView.visibility = View.GONE
+        } else {
+            noReviewTextView.visibility = View.GONE
+            reviewRecyclerView.visibility = View.VISIBLE
+            reviewRecyclerView.adapter = MyReviewRecyclerViewAdapter(requireContext(), reviewList, {
+                val position = it.tag as Int
+                val reviewList = viewModel.myReviewList
+                if (!reviewList.isNullOrEmpty()) {
+                    val review = reviewList[position]
+                    if (review.type == "tour") {
+                        moveToTravelDetail(review.place_id, review.mapy, review.mapx)
+                    } else if (review.type == "kakao") {
+                         moveToSearchDetail(review.getKakaoDocument())
+                    }
                 }
-            }
-        }, {
-            val position = it.tag as Int
-
-
-        })
+            }, {
+                val position = it.tag as Int
+                viewModel.myReviewList?.getOrNull(position)?.let {
+                    moveToCreateReview(it)
+                }
+            })
+        }
     }
 
     private fun fetchMyReviewList(type: String, token: String) {
@@ -115,7 +143,6 @@ class MyFragment : Fragment() {
                     response.body()?.reviews?.let {
                         viewModel.myReviewList = it
                         refreshReviewRecyclerView(it)
-                        it.map { LocalRepository.instance.addMyReview(it.review_id) }
                     }
                 }
             }
@@ -144,9 +171,21 @@ class MyFragment : Fragment() {
         startActivity(intent)
     }
 
+    private fun moveToSearchDetail(document: KakaoDocument) {
+        val intent = Intent(requireContext(), SearchDetailActivity::class.java)
+        intent.putExtra("document", document)
+        startActivity(intent)
+    }
+
     private fun moveToLogin() {
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
     }
 
+    private fun logout() {
+        UserApiClient.instance.logout {
+            LocalRepository.instance.logout(requireContext())
+            onResume()
+        }
+    }
 }

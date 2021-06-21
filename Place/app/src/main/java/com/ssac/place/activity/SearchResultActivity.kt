@@ -16,6 +16,8 @@ import com.ssac.place.KakaoApis
 import com.ssac.place.KakaoSearchResponse
 import com.ssac.place.R
 import com.ssac.place.models.KakaoDocument
+import kotlinx.coroutines.selects.select
+import net.daum.mf.map.api.CalloutBalloonAdapter
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -69,7 +71,6 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
 
     override fun onResume() {
         super.onResume()
-
         mapView = MapView(this).apply {
             setMapViewEventListener(this@SearchResultActivity)
             setPOIItemEventListener(this@SearchResultActivity)
@@ -120,7 +121,7 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
             }
         } else {
             mapView?.setMapCenterPoint(lastCenterPoint, false)
-            resetDocumentList(documentList)
+            restoreSelectedDocument()
         }
     }
 
@@ -231,6 +232,26 @@ class SearchResultActivity : AppCompatActivity(), MapView.MapViewEventListener, 
                 moveToSearchDetail(it)
             }
         }
+    }
+
+    private fun restoreSelectedDocument() {
+        val poiItemList = mutableListOf<MapPOIItem>()
+        for ((i, document) in documentList.iterator().withIndex()) {
+            poiItemList.add(document.toPOIItem(i))
+        }
+        mapView?.addPOIItems(poiItemList.toTypedArray())
+        selectedDocument?.let { document ->
+            mapView?.poiItems?.firstOrNull { it.itemName == document.place_name }?.let {
+                mapView?.selectPOIItem(it, false)
+                moveToMapCenterPoint(it.mapPoint.mapPointGeoCoord.latitude, it.mapPoint.mapPointGeoCoord.longitude)
+            }
+            scrollRecyclerView(document)
+        }
+    }
+
+    private fun scrollRecyclerView(to: KakaoDocument) {
+        val index = documentList.indexOfFirst { it == to }
+        recyclerView.scrollToPosition(index)
     }
 
     private fun moveToSearchDetail(document: KakaoDocument) {

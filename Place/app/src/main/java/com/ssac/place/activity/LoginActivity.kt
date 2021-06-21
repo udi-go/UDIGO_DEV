@@ -62,28 +62,11 @@ class LoginActivity : AppCompatActivity() {
             MyApis.getInstance().fetchMyLikeList(type + " " + token).enqueue(object : Callback<FetchMyLikeListResponse> {
                 override fun onResponse(call: Call<FetchMyLikeListResponse>, response: Response<FetchMyLikeListResponse>) {
                     response.body()?.all?.map { LocalRepository.instance.addLikeTour(it.place_id) }
-                    fetchMyReviewList()
-                }
-
-                override fun onFailure(call: Call<FetchMyLikeListResponse>, t: Throwable) {
-                    logout()
-                }
-            })
-        }
-    }
-
-    private fun fetchMyReviewList() {
-        val type = LocalRepository.instance.getMySocialType(this)
-        val token = TokenManagerProvider.instance.manager.getToken()?.accessToken
-        if (LocalRepository.instance.loggedIn(this) && !type.isNullOrEmpty() && !token.isNullOrEmpty()) {
-            MyApis.getInstance().fetchMyReviewList(type + " " + token).enqueue(object : Callback<FetchMyReviewListResponse> {
-                override fun onResponse(call: Call<FetchMyReviewListResponse>, response: Response<FetchMyReviewListResponse>) {
-                    response.body()?.reviews?.map { LocalRepository.instance.addMyReview(it.review_id) }
                     setResult(RESULT_OK)
                     finish()
                 }
 
-                override fun onFailure(call: Call<FetchMyReviewListResponse>, t: Throwable) {
+                override fun onFailure(call: Call<FetchMyLikeListResponse>, t: Throwable) {
                     logout()
                 }
             })

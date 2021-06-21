@@ -63,11 +63,11 @@ class LikeTypeRecyclerViewHolder(view: View): RecyclerView.ViewHolder(view) {
     fun setSelected(context: Context, selected: Boolean) {
         if (selected) {
             nameTextView.setTextColor(context.getColor(R.color.white))
-            nameTextView.setTypeface(nameTextView.typeface, Typeface.BOLD)
+            nameTextView.setTypeface(null, Typeface.BOLD)
             backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gradation_40_button_background)
         } else {
             nameTextView.setTextColor(context.getColor(R.color.black))
-            nameTextView.setTypeface(nameTextView.typeface, Typeface.NORMAL)
+            nameTextView.setTypeface(null, Typeface.NORMAL)
             backgroundLayout.background = AppCompatResources.getDrawable(context, R.drawable.drawable_gray_border_40_button_background)
         }
     }

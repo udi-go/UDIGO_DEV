@@ -7,4 +7,8 @@ data class PlaceReview(
     val grade: String,
     val text: String,
     val date: String
-)
+) {
+    fun displayDate(): String {
+        return date.substring(0, 10).replace("-", ".")
+    }
+}

@@ -25,17 +25,27 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_place_like_on"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
         <TextView
             android:id="@+id/nameTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
-            android:text="경복궁"
             android:textSize="14sp"
             android:textColor="@color/dark_text_22"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:singleLine="true"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView"
             app:layout_constraintEnd_toEndOf="parent"
@@ -45,12 +55,12 @@
             android:id="@+id/addressTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="서울 종로구 사직로 161 경복궁"
             android:textSize="12sp"
             android:textColor="@color/dark_text_22"
             android:layout_marginBottom="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:singleLine="true"
             app:layout_constraintTop_toBottomOf="@+id/nameTextView"
             app:layout_constraintStart_toEndOf="@+id/imageView"
             app:layout_constraintEnd_toEndOf="parent"

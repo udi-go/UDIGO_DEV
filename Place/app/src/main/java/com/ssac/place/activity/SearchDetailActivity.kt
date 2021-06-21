@@ -1,7 +1,5 @@
 package com.ssac.place.activity
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -15,8 +13,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
-import androidx.viewpager2.widget.ViewPager2
 import com.ssac.place.R
 import com.ssac.place.TravelApis
 import com.ssac.place.TravelSearchResponse
@@ -25,7 +21,6 @@ import com.ssac.place.models.KakaoDocument
 import com.ssac.place.models.PlaceReview
 import com.ssac.place.models.TravelRecommend
 import com.ssac.place.networks.FetchPlaceReviewListResponse
-import com.ssac.place.networks.LoginResponse
 import com.ssac.place.networks.MyApis
 import com.ssac.place.repository.LocalRepository
 import net.daum.mf.map.api.MapPoint
@@ -33,7 +28,6 @@ import net.daum.mf.map.api.MapView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.lang.Math.abs
 
 class SearchDetailActivity : AppCompatActivity() {
     private val document: KakaoDocument by lazy { intent.getSerializableExtra("document") as KakaoDocument }
@@ -79,9 +73,13 @@ class SearchDetailActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        super.onPause()
+    }
+
+    override fun finish() {
         mapViewContainer.removeAllViews()
         mapView = null
-        super.onPause()
+        super.finish()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -240,6 +238,7 @@ class SearchDetailActivity : AppCompatActivity() {
         val intent = Intent(this, CreateReviewActivity::class.java)
         intent.putExtra("placeType", "kakao")
         intent.putExtra("placeName", titleTextView.text.toString())
+        intent.putExtra("reviewId", reviewId)
         intent.putExtra("grade", rating.toInt())
         intent.putExtra("contents", contents)
         startActivityForResult(intent, CREATE_REVIEW_REQUEST_CODE)

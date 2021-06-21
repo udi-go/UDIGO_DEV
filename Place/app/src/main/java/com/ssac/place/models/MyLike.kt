@@ -7,5 +7,7 @@ data class MyLike (
         val title: String,
         val image: String,
         val address: String,
-        val created_at: String
+        val created_at: String,
+        val mapx: String,
+        val mapy: String
 )
